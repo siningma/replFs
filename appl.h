@@ -1,9 +1,9 @@
-/****************/
-/* Your Name	*/
-/* Date		*/
-/* CS 244B	*/
-/* Spring 2013	*/
-/****************/
+/************************/
+/* Your Name: Sining Ma */
+/* Date: 05/10/2014     */
+/* CS 244B	            */
+/* Spring 2013	        */
+/************************/
 
 int const MaxWrites = 128;
 int const MaxBlockLength = 512;

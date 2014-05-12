@@ -1,9 +1,9 @@
-/****************/
-/* Your Name	*/
-/* Date		*/
-/* CS 244B	*/
-/* Spring 2013	*/
-/****************/
+/************************/
+/* Your Name: Sining Ma */
+/* Date: 05/10/2014     */
+/* CS 244B              */
+/* Spring 2013          */
+/************************/
 
 #define DEBUG
 
@@ -15,6 +15,7 @@
 #include <assert.h>
 
 #include <client.h>
+#include "clientInstance.h"
 
 /* ------------------------------------------------------------------ */
 
@@ -29,7 +30,42 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
   /* Initialize network access, local state, etc.     */
   /****************************************************/
 
-  return( NormalReturn );  
+  client.packetLoss = packetLoss;
+  client.numServers = numServers;
+  srand(time(NULL));
+  client.nodeId = (uint32_t)rand();
+  client.socket = rfs_netInit(portNum);
+  client.recvInitAckServerCount = 0;
+
+  struct timeval first;
+  struct timeval last;
+  struct timeval now;
+
+  getCurrentTime(&first);
+
+  while(1) {
+    getCurrentTime(&now);
+    if (isTimeOut(&now, &last, SEND_MSG_INTERVAL)) {
+      sendInitMessage(client.socket, client.nodeId);
+    }
+
+
+    getCurrentTime(&now);
+    if (isTimeOut(&now, &first, 2000)) {
+      break;
+    } else {
+      char buf[HEADER_SIZE];
+      memset(buf, 0, HEADER_SIZE);
+
+      int status = rfs_recvFrom(socket, buf, HEADER_SIZE);
+    }
+
+  }
+
+  if (recvInitAckServerCount < numServers)
+    return ( ErrorReturn );
+  else
+    return( NormalReturn );  
 }
 
 /* ------------------------------------------------------------------ */
