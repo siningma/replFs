@@ -46,7 +46,11 @@ static uint32_t msgSeqNum = 0;
 
 class NetworkInstance {
 public:
-	
+	int packetLoss;
+	int socket;
+	uint32_t nodeId;
+
+	NetworkInstance(int packetLoss, int socket, uint32_t nodeId);
 };
 
 class Message {
@@ -115,6 +119,5 @@ bool isDrop(int packetLoss);
 int rfs_netInit(unsigned short port);
 ssize_t rfs_sendTo(int socket, char *buf, int length);
 ssize_t rfs_recvFrom(int socket, char* buf, int length);
-void convert_incoming(const char* buf);
 
 #endif

@@ -112,6 +112,11 @@ int rfs_netInit(unsigned short port) {
 }
 
 ssize_t rfs_sendTo(int socket, char *buf, int length) {
+	if (isDrop()) {
+		printf(" Dropped\n");
+		return 0;
+	}
+
 	ssize_t cc = sendto(socket, buf, length, 0, 
 		(struct sockaddr *)&groupAddr, sizeof(Sockaddr));
 
@@ -125,48 +130,15 @@ ssize_t rfs_recvFrom(int socket, char* buf, int length) {
 	if (cc < 0 && errno != EINTR)
 		perror("event recvfrom");
 
+	if (isDrop()) {
+		return 0;
+	}
+
 	return cc;
 }
 
-void convert_incoming(const char* buf) {
-	unsigned char msgType = buf[0];
-
-	switch(msgType) {
-		case INIT:
-		{
-			InitMessage p;
-			p.deserialize(buf);
-
-			processInitMessage(&p);
-			break;
-		}
-		case INITACK:
-		{
-			InitAckMessage p;
-			p.deserialize(buf);
-
-			processInitAckMessage(&p);
-			break;
-		}
-		default:
-		break;
-	}
-}
-
-void sendInitMessage(int socket, uint32_t nodeId) {
-	InitMessage msg(nodeId, getMsgSeqNum());
-
-	char buf[HEADER_SIZE];
-	memset(buf, 0, HEADER_SIZE);
-	msg.serialize(buf);
-
-	rfs_sendTo(socket, buf, HEADER_SIZE);
-}
-
-int processInitMessage(InitMessage *p) {
-	sendInitAckMessage(socket)
-}
-
-int processInitAckMessage(InitAckMessage *p) {
-
+NetworkInstance:: NetworkInstance(int packetLoss, int socket, uint32_t nodeId) {
+	this->packetLoss = packetLoss;
+	this->socket = socket;
+	this->nodeId = nodeId;
 }

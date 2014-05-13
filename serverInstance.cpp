@@ -7,14 +7,16 @@
 
 #include "serverInstance.h"
 
+ServerInstance *server;
+
 int main(int argc, char *argv[]) {
 
 	unsigned short port = (unsigned short)atoi(argv[2]);
-	server.filepath = argv[4];
-	server.packetLoss = (uint16_t)atoi(argv[6]);
+	char *filepath = argv[4];
+	int packetLoss = atoi(argv[6]);
 
 	srand(time(NULL));
-	server.serverId = (uint32_t)rand();
+	uint32_t nodeId = (uint32_t)rand();
 
 	int err = mkdir(filepath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	if (err == -1) {
@@ -27,22 +29,59 @@ int main(int argc, char *argv[]) {
 
 	int socket = rfs_netInit(port);
 
-	execute(socket);
+	server = new ServerInstance(packetLoss, socket, nodeId, filePath);
+	execute();
 	return 0;
 }
 
-void ServerInstance:: execute() {
+ServerInstance:: ServerInstance(int packetLoss, int socket, uint32_t nodeId, char* filePath): NetworkInstance(packetLoss, socket, nodeId) {
+	int len = strlen(filePath) + 1;
+
+	this->filePath = new char[len];
+	memset(this->filePath, 0, len);
+	memcpy(this->filePath, filePath, len);
+}
+
+void ServerInstance:: sendInitAckMessage() {
+	InitAckMessage initAckMsg(this->nodeId, getMsgSeqNum());
+
+	char buf[HEADER_SIZE];
+	memset(buf, 0, HEADER_SIZE);
+	initAckMsg.serialize(buf);
+	initAckMsg.print();
+
+	rfs_sendTo(this->socket, buf, HEADER_SIZE);
+}
+
+int ServerInstance:: procInitMessage(char *buf) {
+	InitMessage initMessage();
+	initMessage.deserialize(buf);
+	initMessage.print();
+
+	sendInitAckMessage();
+	return 0;
+}
+
+void execute() {
 	char buf[BUF_SIZE];
 
 	while(1) {
 		memset(buf, 0, BUF_SIZE);
 
-		ssize_t status = rfs_recvFrom(this->socket, buf, BUF_SIZE);
+		ssize_t status = rfs_recvFrom(server->socket, buf, BUF_SIZE);
 
 		if (status > 0) {
-			convert_incoming(buf);
+			unsigned char msgType = buf[0];
 
-
+			switch(msgType) {
+				case INIT:
+				{
+					server->processInitMessage(buf);
+					break;
+				}
+				default:
+				break;
+			}
 		}
 	}
 }

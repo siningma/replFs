@@ -17,25 +17,25 @@
 #include <client.h>
 #include "clientInstance.h"
 
+static ClientInstance *client;
+
 /* ------------------------------------------------------------------ */
 
 int
 InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
 #ifdef DEBUG
-  printf( "InitReplFs: Port number %d, packet loss %d percent, %d servers\n", 
-	  portNum, packetLoss, numServers );
+    printf( "InitReplFs: Port number %d, packet loss %d percent, %d servers\n", 
+	     portNum, packetLoss, numServers );
 #endif
 
   /****************************************************/
   /* Initialize network access, local state, etc.     */
   /****************************************************/
 
-  client.packetLoss = packetLoss;
-  client.numServers = numServers;
+  int socket = rfs_netInit(portNum);
   srand(time(NULL));
-  client.nodeId = (uint32_t)rand();
-  client.socket = rfs_netInit(portNum);
-  client.recvInitAckServerCount = 0;
+  uint32_t nodeId = (uint32_t)rand();
+  client = new ClientInstance(packetLoss, socket, nodeId, numServers);
 
   struct timeval first;
   struct timeval last;
@@ -44,28 +44,29 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
   getCurrentTime(&first);
 
   while(1) {
-    getCurrentTime(&now);
-    if (isTimeOut(&now, &last, SEND_MSG_INTERVAL)) {
-      sendInitMessage(client.socket, client.nodeId);
-    }
+      getCurrentTime(&now);
+      if (isTimeOut(&now, &last, SEND_MSG_INTERVAL)) {
+          client->sendInitMessage();
+      }
 
 
-    getCurrentTime(&now);
-    if (isTimeOut(&now, &first, 2000)) {
-      break;
-    } else {
-      char buf[HEADER_SIZE];
-      memset(buf, 0, HEADER_SIZE);
+      getCurrentTime(&now);
+      if (isTimeOut(&now, &first, 2000)) {
+          break;
+      } else {
+          char buf[HEADER_SIZE];
+          memset(buf, 0, HEADER_SIZE);
 
-      int status = rfs_recvFrom(socket, buf, HEADER_SIZE);
-    }
+          int status = rfs_recvFrom(socket, buf, HEADER_SIZE);
+          client->procInitMessage(buf);
+      }
 
   }
 
-  if (recvInitAckServerCount < numServers)
-    return ( ErrorReturn );
+  if (client->serverIds.size() < numServers)
+      return ( ErrorReturn );
   else
-    return( NormalReturn );  
+      return( NormalReturn );  
 }
 
 /* ------------------------------------------------------------------ */
@@ -77,7 +78,7 @@ OpenFile( char * fileName ) {
   ASSERT( fileName );
 
 #ifdef DEBUG
-  printf( "OpenFile: Opening File '%s'\n", fileName );
+    printf( "OpenFile: Opening File '%s'\n", fileName );
 #endif
 
   fd = open( fileName, O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR );

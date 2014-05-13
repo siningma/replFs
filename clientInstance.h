@@ -2,18 +2,16 @@
 #define CLIENTINSTANCE_H
 
 #include "network.h"
+#include <vector>
 
 class ClientInstance : public NetworkInstance {
 public: 
-	int packetLoss;
 	int numServers;
-	int socket;
-	uint32_t clientId;
+	std::vector<uint32_t> serverIds;
 
-	int recvInitAckServerCount;
-	int serverId[numServers];
-
-	ClientInstance();
+	ClientInstance(int packetLoss, int socket, uint32_t nodeId, int numServers);
+	void sendInitMessage();
+	int procInitAckMessage(char *buf);
 };
 
 #endif

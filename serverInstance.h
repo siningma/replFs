@@ -14,12 +14,14 @@
 
 class ServerInstance: public NetworkInstance {
 public:
-	int packetLoss;
 	char *filePath;
-	int socket;
-	uint32_t serverId;
 
-	void execute();
+	ServerInstance(int packetLoss, int socket, uint32_t nodeId, char* filePath);
+
+	void sendInitAckMessage();
+	int procInitMessage(char *buf)
 };
+
+void execute();
 
 #endif
