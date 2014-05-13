@@ -19,6 +19,9 @@ void ClientInstance:: sendInitMessage() {
 	initMsg.serialize(buf);
 	initMsg.print();
 
+
+	if (isDropPacket(packetLoss))
+		return;
 	rfs_sendTo(this->socket, buf, HEADER_SIZE);
 }
 

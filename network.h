@@ -129,6 +129,7 @@ void getCurrentTime(struct timeval *tv);
 uint32_t getMsgSeqNum();
 bool isTimeOut(struct timeval *curr, struct timeval *last, uint32_t millisecond);
 bool isDrop(int packetLoss);
+bool isDropPacket(int packetLoss);
 
 int rfs_netInit(unsigned short port);
 ssize_t rfs_sendTo(int socket, char *buf, int length);

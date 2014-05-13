@@ -18,8 +18,8 @@ void getCurrentTime(struct timeval *tv) {
 	gettimeofday(tv, NULL);  	
 }
 
-void getMsgSeqNum() {
-	if (msgSeqNum == UINT32_MAX) {
+uint32_t getMsgSeqNum() {
+	if (msgSeqNum == 10000000) {
 		msgSeqNum = 0;
 		return msgSeqNum;
 	} else {
@@ -38,6 +38,16 @@ bool isDrop(int packetLoss) {
 	return ((unsigned int)rand() % 100) < packetLoss;
 }
 
+bool isDropPacket(int packetLoss) { 
+	if (isDrop(packetLoss)) {
+		printf(" Drop\n");
+		return true;
+	} else {
+		printf(" Send\n");
+		return false;
+	}
+}
+
 int rfs_netInit(unsigned short port) {
 	Sockaddr		nullAddr;
 	Sockaddr		*thisHost;
@@ -45,10 +55,6 @@ int rfs_netInit(unsigned short port) {
 	int				reuse;
 	u_char          ttl;
 	struct ip_mreq  mreq;
-
-	gethostname(buf, sizeof(buf));
-	if ((thisHost = resolveHost(buf)) == (Sockaddr *) NULL)
-	  RFSError("who am I?");
 
 	int socket = socket(AF_INET, SOCK_DGRAM, 0);
 	if (socket < 0)
@@ -105,11 +111,6 @@ int rfs_netInit(unsigned short port) {
 }
 
 ssize_t rfs_sendTo(int socket, char *buf, int length) {
-	if (isDrop()) {
-		printf(" Dropped\n");
-		return 0;
-	}
-
 	ssize_t cc = sendto(socket, buf, length, 0, 
 		(struct sockaddr *)&groupAddr, sizeof(Sockaddr));
 
@@ -136,10 +137,6 @@ ssize_t rfs_recvFrom(int socket, char* buf, int length) {
 	
 	if (cc < 0 && errno != EINTR)
 		perror("event recvfrom");
-
-	if (isDrop()) {
-		return 0;
-	}
 
 	return cc;
 }

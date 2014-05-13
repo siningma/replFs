@@ -50,6 +50,8 @@ void ServerInstance:: sendInitAckMessage() {
 	initAckMsg.serialize(buf);
 	initAckMsg.print();
 
+	if (isDropPacket(packetLoss))
+		return;
 	rfs_sendTo(this->socket, buf, HEADER_SIZE);
 }
 
@@ -69,6 +71,8 @@ void execute() {
 		memset(buf, 0, BUF_SIZE);
 
 		ssize_t status = rfs_recvFrom(server->socket, buf, BUF_SIZE);
+		if (isDropPacket(server->packetLoss))
+			continue;
 
 		if (status > 0) {
 			unsigned char msgType = buf[0];
