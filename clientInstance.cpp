@@ -23,11 +23,11 @@ void ClientInstance:: sendInitMessage() {
 }
 
 int ClientInstance:: procInitAckMessage(char *buf) {
-	InitAckMessage initAckMessage();
+	InitAckMessage initAckMessage;
 	initAckMessage.deserialize(buf);
 	initAckMessage.print();
 
-	if (serverIds.size() == numServers)
+	if ((int)serverIds.size() == numServers)
 		return 0;
 
 	for (unsigned int i = 0; i < serverIds.size(); i++) {

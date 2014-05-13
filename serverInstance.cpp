@@ -54,7 +54,7 @@ void ServerInstance:: sendInitAckMessage() {
 }
 
 int ServerInstance:: procInitMessage(char *buf) {
-	InitMessage initMessage();
+	InitMessage initMessage;
 	initMessage.deserialize(buf);
 	initMessage.print();
 
