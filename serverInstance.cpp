@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
 		if (errno == ENOENT) {
 			RFSError("machine already in use");
 		} else {
-			RFSError("create %s directory error", filePath);
+			RFSError("create filepath directory error");
 		}
 	}
 
