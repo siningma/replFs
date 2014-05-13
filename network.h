@@ -49,8 +49,9 @@
 #define CLOSEACK 		0xCC
 
 #define HEADER_SIZE 	10	
-
 #define SEND_MSG_INTERVAL 	200
+
+typedef	struct sockaddr_in			Sockaddr;
 
 static Sockaddr         groupAddr;
 static uint32_t msgSeqNum = 0;
@@ -81,8 +82,10 @@ public:
 
 	virtual void serialize(char *buf) {
 		buf[0] = msgType;
-		memcpy(buf + 2, &htonl(nodeId), 4);
-		memcpy(buf + 6, &htonl(seqNum), 4);
+		uint32_t msg_nodeId = htonl(nodeId);
+		uint32_t msg_seqNum = htonl(seqNum);
+		memcpy(buf + 2, &msg_nodeId, 4);
+		memcpy(buf + 6, &msg_seqNum, 4);
 	}
 
 	virtual void deserialize(char *buf) {
