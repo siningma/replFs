@@ -56,15 +56,15 @@ int rfs_netInit(unsigned short port) {
 	u_char          ttl;
 	struct ip_mreq  mreq;
 
-	int socket = socket(AF_INET, SOCK_DGRAM, 0);
-	if (socket < 0)
+	int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sockfd < 0)
 	  RFSError("can't get socket");
 
 	/* SO_REUSEADDR allows more than one binding to the same
 	   socket - you cannot have more than one player on one
 	   machine without this */
 	reuse = 1;
-	if (setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, &reuse,
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &reuse,
 		   sizeof(reuse)) < 0) {
 		RFSError("setsockopt failed (SO_REUSEADDR)");
 	}
@@ -72,7 +72,7 @@ int rfs_netInit(unsigned short port) {
 	nullAddr.sin_family = AF_INET;
 	nullAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	nullAddr.sin_port = htons(port);
-	if (bind(socket, (struct sockaddr *)&nullAddr,
+	if (bind(sockfd, (struct sockaddr *)&nullAddr,
 		 sizeof(nullAddr)) < 0)
 	  RFSError("netInit binding");
 
@@ -89,7 +89,7 @@ int rfs_netInit(unsigned short port) {
 	*/
 
 	ttl = 1;
-	if (setsockopt(socket, IPPROTO_IP, IP_MULTICAST_TTL, &ttl,
+	if (setsockopt(sockfd, IPPROTO_IP, IP_MULTICAST_TTL, &ttl,
 		   sizeof(ttl)) < 0) {
 		RFSError("setsockopt failed (IP_MULTICAST_TTL)");
 	}
@@ -97,7 +97,7 @@ int rfs_netInit(unsigned short port) {
 	/* join the multicast group */
 	mreq.imr_multiaddr.s_addr = htonl(RFSGROUP);
 	mreq.imr_interface.s_addr = htonl(INADDR_ANY);
-	if (setsockopt(socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)
+	if (setsockopt(sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)
 		   &mreq, sizeof(mreq)) < 0) {
 		RFSError("setsockopt failed (IP_ADD_MEMBERSHIP)");
 	}
@@ -107,7 +107,7 @@ int rfs_netInit(unsigned short port) {
 	memcpy(&groupAddr, &nullAddr, sizeof(Sockaddr));
 	groupAddr.sin_addr.s_addr = htonl(RFSGROUP);
 
-	return socket;
+	return sockfd;
 }
 
 ssize_t rfs_sendTo(int socket, char *buf, int length) {
@@ -129,7 +129,7 @@ ssize_t rfs_recvFrom(int socket, char* buf, int length) {
 	timeout.tv_usec = 0;
 	while ((ret = select(32, &fdmask, NULL, NULL, &timeout)) == -1) {
 	    if (errno != EINTR)
-	    	MWError("select error on events");
+	    	RFSError("select error on events");
 	}
 
 	ssize_t cc = recvfrom(socket, buf, length, 0, 
