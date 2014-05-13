@@ -12,18 +12,18 @@ ServerInstance *server;
 int main(int argc, char *argv[]) {
 
 	unsigned short port = (unsigned short)atoi(argv[2]);
-	char *filepath = argv[4];
+	char *filePath = argv[4];
 	int packetLoss = atoi(argv[6]);
 
 	srand(time(NULL));
 	uint32_t nodeId = (uint32_t)rand();
 
-	int err = mkdir(filepath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	int err = mkdir(filePath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	if (err == -1) {
 		if (errno == ENOENT) {
 			RFSError("machine already in use");
 		} else {
-			RFSError("create filepath directory error");
+			RFSError("create %s directory error", filePath);
 		}
 	}
 
@@ -80,7 +80,7 @@ void execute() {
 			switch(msgType) {
 				case INIT:
 				{
-					server->processInitMessage(buf);
+					server->procInitMessage(buf);
 					break;
 				}
 				default:
