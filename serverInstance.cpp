@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
 
 	int err = mkdir(filepath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	if (err == -1) {
-		if (error == ENOENT) {
+		if (errno == ENOENT) {
 			RFSError("machine already in use");
 		} else {
 			RFSError("create filepath directory error");
