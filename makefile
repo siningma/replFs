@@ -35,7 +35,7 @@ clientInstance.o: 	clientInstance.cpp clientInstance.h network.h
 replFsServer:	$(SERVER_OBJECTS)	
 	$(CCF) -o replFsServer $(SERVER_OBJECTS) $(LIBDIRS) $(LIBS)
 
-serverInstance.o: 	serverInstance.cpp server.h network.h
+serverInstance.o: 	serverInstance.cpp serverInstance.h network.h
 	$(CCF) -c $(INCDIR) serverInstance.cpp
 
 network.o:	network.cpp network.h
