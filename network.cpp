@@ -110,19 +110,19 @@ int rfs_netInit(unsigned short port) {
 	return sockfd;
 }
 
-ssize_t rfs_sendTo(int socket, char *buf, int length) {
-	ssize_t cc = sendto(socket, buf, length, 0, 
+ssize_t rfs_sendTo(int sockfd, char *buf, int length) {
+	ssize_t cc = sendto(sockfd, buf, length, 0, 
 		(struct sockaddr *)&groupAddr, sizeof(Sockaddr));
 
 	return cc;
 }
 
-ssize_t rfs_recvFrom(int socket, char* buf, int length) {
+ssize_t rfs_recvFrom(int sockfd, char* buf, int length) {
 	fd_set	fdmask;
 	int	ret;
 
 	FD_ZERO(&fdmask);
-	FD_SET(socket, &fdmask);
+	FD_SET(sockfd, &fdmask);
 
 	struct timeval timeout;
 	timeout.tv_sec = 0;
@@ -132,8 +132,9 @@ ssize_t rfs_recvFrom(int socket, char* buf, int length) {
 	    	RFSError("select error on events");
 	}
 
-	ssize_t cc = recvfrom(socket, buf, length, 0, 
-		(struct sockaddr *)&groupAddr, sizeof(Sockaddr));
+	socklen_t fromLen = sizeof(Sockaddr);
+	ssize_t cc = recvfrom(sockfd, buf, length, 0, 
+		(struct sockaddr *)&groupAddr, &fromLen);
 	
 	if (cc < 0 && errno != EINTR)
 		perror("event recvfrom");
