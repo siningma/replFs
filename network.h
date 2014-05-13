@@ -15,6 +15,7 @@
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <time.h>
 
 #include <unistd.h>
 #include <errno.h>
@@ -73,30 +74,30 @@ public:
 	Message() {}
 
 	Message(unsigned char msgType, uint32_t nodeId, uint32_t seqNum) {
-		this->mesType = msgType;
+		this->msgType = msgType;
 		this->nodeId = nodeId;
 		this->seqNum = seqNum;
 	}
 
 	virtual void serialize(char *buf) {
 		buf[0] = msgType;
-		memcpy(buf + 2, htonl(nodeId), 4);
-		memcpy(buf + 6, htonl(seqNum), 4);
+		memcpy(buf + 2, &htonl(nodeId), 4);
+		memcpy(buf + 6, &htonl(seqNum), 4);
 	}
 
 	virtual void deserialize(char *buf) {
 		this->msgType = buf[0];
 		this->reserved = 0;
 		uint32_t nodeId = 0;
-		memcpy(nodeId, buf + 2, 4);
+		memcpy(&nodeId, buf + 2, 4);
 		this->nodeId = ntohl(nodeId);
 		uint32_t seqNum = 0;
-		memcpy(seqNum, buf + 6, 4);
+		memcpy(&seqNum, buf + 6, 4);
 		this->seqNum = ntohl(seqNum);
 	}
 
 	virtual void print() {
-		printf("Message Type: 0x%2x, NodeId: %u, seqNum: %u", this->mesType, this->nodeId, this->seqNum);
+		printf("Message Type: 0x%2x, NodeId: %u, seqNum: %u", this->msgType, this->nodeId, this->seqNum);
 	}
 };
 

@@ -33,7 +33,7 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
   /****************************************************/
 
   int socket = rfs_netInit(portNum);
-  srand(time(NULL));
+  srand (time(NULL));
   uint32_t nodeId = (uint32_t)rand();
   client = new ClientInstance(packetLoss, socket, nodeId, numServers);
 
@@ -58,12 +58,12 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
           memset(buf, 0, HEADER_SIZE);
 
           int status = rfs_recvFrom(socket, buf, HEADER_SIZE);
-          client->procInitMessage(buf);
+          client->procInitAckMessage(buf);
       }
 
   }
 
-  if (client->serverIds.size() < numServers)
+  if ((int)client->serverIds.size() < numServers)
       return ( ErrorReturn );
   else
       return( NormalReturn );  

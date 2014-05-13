@@ -1,7 +1,7 @@
 
 CFLAGS	= -g -Wall -DSUN
 # CFLAGS	= -g -Wall -DDEC
-CC	= gcc
+CC	= g++
 CCF	= $(CC) $(CFLAGS)
 
 H	= .
@@ -9,7 +9,7 @@ C_DIR	= .
 
 INCDIR	= -I$(H)
 LIBDIRS = -L$(C_DIR)
-LIBS    = -lclientReplFs -lnsl
+LIBS    = -lclientReplFs
 
 CLIENT_OBJECTS = client.o clientInstance.o network.o
 SERVER_OBJECTS = serverInstance.o network.o
