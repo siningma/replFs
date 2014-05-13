@@ -8,13 +8,22 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
+#include <sys/types.h>
+#include <sys/uio.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 #include <unistd.h>
 #include <errno.h>
 #include <netdb.h>
-#include <time.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <strings.h>
+#include <assert.h>
 
 #ifndef	TRUE
 #define	TRUE		1

@@ -49,7 +49,6 @@ int rfs_netInit(unsigned short port) {
 	gethostname(buf, sizeof(buf));
 	if ((thisHost = resolveHost(buf)) == (Sockaddr *) NULL)
 	  RFSError("who am I?");
-	bcopy((caddr_t) thisHost, (caddr_t) (M->myAddr()), sizeof(Sockaddr));
 
 	int socket = socket(AF_INET, SOCK_DGRAM, 0);
 	if (socket < 0)
@@ -97,12 +96,6 @@ int rfs_netInit(unsigned short port) {
 		RFSError("setsockopt failed (IP_ADD_MEMBERSHIP)");
 	}
 
-	/*
-	 * Now we can try to find a game to join; if none, start one.
-	 */
-	 
-	printf("\n");
-
 	/* Get the multi-cast address ready to use in SendData()
            calls. */
 	memcpy(&groupAddr, &nullAddr, sizeof(Sockaddr));
@@ -124,6 +117,20 @@ ssize_t rfs_sendTo(int socket, char *buf, int length) {
 }
 
 ssize_t rfs_recvFrom(int socket, char* buf, int length) {
+	fd_set	fdmask;
+	int	ret;
+
+	FD_ZERO(&fdmask);
+	FD_SET(socket, &fdmask);
+
+	struct timeval timeout;
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 0;
+	while ((ret = select(32, &fdmask, NULL, NULL, &timeout)) == -1) {
+	    if (errno != EINTR)
+	    	MWError("select error on events");
+	}
+
 	ssize_t cc = recvfrom(socket, buf, length, 0, 
 		(struct sockaddr *)&groupAddr, sizeof(Sockaddr));
 	
