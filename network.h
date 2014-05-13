@@ -24,6 +24,7 @@
 #include <string.h>
 #include <strings.h>
 #include <assert.h>
+#include <vector>
 
 #ifndef	TRUE
 #define	TRUE		1

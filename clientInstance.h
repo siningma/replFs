@@ -1,7 +1,6 @@
 #ifndef CLIENTINSTANCE_H
 #define CLIENTINSTANCE_H
 
-#include <vector>
 #include "network.h"
 
 class ClientInstance : public NetworkInstance {
