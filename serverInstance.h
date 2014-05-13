@@ -19,7 +19,7 @@ public:
 	ServerInstance(int packetLoss, int socket, uint32_t nodeId, char* filePath);
 
 	void sendInitAckMessage();
-	int procInitMessage(char *buf)
+	int procInitMessage(char *buf);
 };
 
 void execute();
