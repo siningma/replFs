@@ -64,7 +64,7 @@ void ClientInstance:: sendOpenFileMessage(uint32_t fileId, char* filename) {
 	}
 }
 
-int ClientInstance:: procOpenFileAckMessage() {
+int ClientInstance:: procOpenFileAckMessage(char *buf) {
 	OpenFileAckMessage openFileAckMessage;
 	openFileAckMessage.deserialize(buf);
 

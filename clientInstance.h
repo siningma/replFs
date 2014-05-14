@@ -12,8 +12,8 @@ public:
 
 	void sendInitMessage();
 	int procInitAckMessage(char *buf);
-	void sendOpenFileMessage();
-	int procOpenFileAckMessage();
+	void sendOpenFileMessage(uint32_t fileId, char* filename);
+	int procOpenFileAckMessage(char *buf);
 };
 
 #endif
