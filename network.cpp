@@ -138,6 +138,8 @@ uint32_t NetworkInstance:: getMsgSeqNum() {
 	}
 }
 
-bool NetworkInstance:: isMySentMessage(uint32_t id) {
-	return this->nodeId == id;
+bool NetworkInstance:: isMessageSentByMe(char *buf) {
+	uint32_t msg_nodeId = 0;
+	memcpy(&msg_nodeId, buf + 2, 4);
+	return this->nodeId == ntohl(msg_nodeId);
 }

@@ -62,6 +62,8 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
 
             if (client->rfs_recvData(100)) {    // client is non-blocking IO
                 int status = client->rfs_recvFrom(buf, HEADER_SIZE);
+                if (isMessageSentByMe(buf))
+                    continue;
 
                 if (status > 0) {
                     client->procInitAckMessage(buf);

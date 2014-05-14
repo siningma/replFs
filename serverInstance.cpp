@@ -68,9 +68,6 @@ int ServerInstance:: procInitMessage(char *buf) {
 	InitMessage initMessage;
 	initMessage.deserialize(buf);
 
-	if (isMySentMessage(initMessage.nodeId))
-		return 0;
-
 	printf("Recv Message: ");
 	initMessage.print();
 
@@ -87,6 +84,9 @@ void ServerInstance:: execute() {
 		if (rfs_recvData(-1)) {	// server is blocking IO
 
 			ssize_t status = rfs_recvFrom(buf, BUF_SIZE);
+			if (isMessageSentByMe(buf))
+				continue;
+
 			if (isDropPacket(server->packetLoss))
 				continue;
 
