@@ -32,7 +32,7 @@ int ClientInstance:: procInitAckMessage(char *buf) {
 	InitAckMessage initAckMessage;
 	initAckMessage.deserialize(buf);
 
-	printf("Receive Message: ");
+	printf("Recv Message: ");
 	initAckMessage.print();
 
 	if ((int)serverIds.size() == numServers)

@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
 	srand(time(NULL));
 	uint32_t nodeId = (uint32_t)rand();
 
-	printf("Server port: %u, filePath: %s, packetLoss: %d, nodeId: %u\n", port, filePath, packetLoss, nodeId);
+	printf("Server port: %u, filePath: %s, packetLoss: %d, nodeId: %10u\n", port, filePath, packetLoss, nodeId);
 	server = new ServerInstance(packetLoss, nodeId, filePath);
 
 	int err = mkdir(filePath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -68,7 +68,7 @@ int ServerInstance:: procInitMessage(char *buf) {
 	InitMessage initMessage;
 	initMessage.deserialize(buf);
 
-	printf("Receive Message: ");
+	printf("Recv Message: ");
 	initMessage.print();
 
 	sendInitAckMessage();

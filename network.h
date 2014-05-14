@@ -107,7 +107,7 @@ public:
 	}
 
 	virtual void print() {
-		printf("Message Type: 0x%02x, NodeId: %u, seqNum: %u\n", this->msgType, this->nodeId, this->seqNum);
+		printf("Message Type: 0x%02x, NodeId: %10u, seqNum: %u\n", this->msgType, this->nodeId, this->seqNum);
 	}
 };
 
