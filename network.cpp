@@ -101,8 +101,8 @@ ssize_t NetworkInstance:: rfs_sendTo(char *buf, int length) {
 
 bool NetworkInstance:: rfs_recvData(int pollTimeout) {
     struct pollfd udp;
-    memset(udp, 0, sizeof(struct pollfd));
-    
+    memset(&udp, 0, sizeof(struct pollfd));
+
     udp.fd = this->sockfd;
     udp.events = POLLIN;
 
@@ -130,9 +130,9 @@ ssize_t NetworkInstance:: rfs_recvFrom(char* buf, int length) {
 }
 
 uint32_t NetworkInstance:: getMsgSeqNum() {
-	if (msgSeqNum == (uint32_t)~0)) {
+	if (msgSeqNum == (uint32_t)~0) {
 		msgSeqNum = 0;
-		return msgSeqNum;
+		return (uint32_t)~0;
 	} else {
 		return msgSeqNum++;
 	}
