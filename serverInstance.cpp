@@ -54,6 +54,7 @@ void ServerInstance:: execute() {
 		if (rfs_recvData(-1)) {	// server is blocking IO
 
 			ssize_t status = rfs_recvFrom(buf, BUF_SIZE);
+			printf("Server recv status: %d\n", (int)status);
 			if (isMessageSentByMe(buf))
 				continue;
 
