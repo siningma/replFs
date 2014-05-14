@@ -112,6 +112,8 @@ bool NetworkInstance:: rfs_recvData(int pollTimeout) {
         RFSError("poll error"); 
         return false;  
     } else {
+    	printf("Server poll data\n");
+    	
         if (udp.revents & POLLIN)
         	return true;
         else
