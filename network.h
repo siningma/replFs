@@ -192,7 +192,7 @@ public:
 		Message::print();
 		printf("FileDesc: %d\n", fileDesc);
 	}
-}
+};
 
 void RFSError(char *s);
 void getCurrentTime(struct timeval *tv);
