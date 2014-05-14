@@ -10,6 +10,8 @@
 ServerInstance *server;
 
 int main(int argc, char *argv[]) {
+	if (argc != 7)
+		RFSError("Invalid command. Example: replFsServer -port 4137 -mount /folder1/fs244b -drop 3");
 
 	unsigned short port = (unsigned short)atoi(argv[2]);
 	char *filePath = argv[4];
@@ -17,6 +19,8 @@ int main(int argc, char *argv[]) {
 
 	srand(time(NULL));
 	uint32_t nodeId = (uint32_t)rand();
+
+	printf("Server port: %u, filePath: %s, packetLoss: %d, nodeId: %u\n", port, filePath, packetLoss, nodeId);
 
 	int err = mkdir(filePath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	if (err == -1) {
