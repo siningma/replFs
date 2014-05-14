@@ -39,6 +39,7 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
     printf("Client port: %u, packetLoss: %d, numServers: %d, nodeId: %010u\n", portNum, packetLoss, numServers, nodeId);
 
     client->rfs_netInit(portNum);
+    printf("Client sockfd: %d\n", client->sockfd);
 
     struct timeval first;
     struct timeval last;
