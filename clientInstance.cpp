@@ -21,7 +21,7 @@ void ClientInstance:: sendInitMessage() {
 	
 	if (isDropPacket(packetLoss))
 		return;
-	rfs_sendTo(this->sockfd, buf, HEADER_SIZE);
+	rfs_sendTo(buf, HEADER_SIZE);
 }
 
 int ClientInstance:: procInitAckMessage(char *buf) {

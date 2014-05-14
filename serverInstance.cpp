@@ -21,6 +21,7 @@ int main(int argc, char *argv[]) {
 	uint32_t nodeId = (uint32_t)rand();
 
 	printf("Server port: %u, filePath: %s, packetLoss: %d, nodeId: %u\n", port, filePath, packetLoss, nodeId);
+	server = new ServerInstance(packetLoss, sockfd, nodeId, filePath);
 
 	int err = mkdir(filePath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	if (err == -1) {
@@ -31,10 +32,10 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	int sockfd = rfs_netInit(port);
+	server->rfs_netInit(port);
 
-	server = new ServerInstance(packetLoss, sockfd, nodeId, filePath);
-	execute();
+	server->execute();
+	
 	return 0;
 }
 
@@ -56,7 +57,7 @@ void ServerInstance:: sendInitAckMessage() {
 
 	if (isDropPacket(packetLoss))
 		return;
-	rfs_sendTo(this->sockfd, buf, HEADER_SIZE);
+	rfs_sendTo(buf, HEADER_SIZE);
 }
 
 int ServerInstance:: procInitMessage(char *buf) {
@@ -68,15 +69,15 @@ int ServerInstance:: procInitMessage(char *buf) {
 	return 0;
 }
 
-void execute() {
+void ServerInstance:: execute() {
 	char buf[BUF_SIZE];
 
 	while(1) {
 		memset(buf, 0, BUF_SIZE);
 
-		if (rfs_recvData(this->sockfd, -1)) {
-			
-			ssize_t status = rfs_recvFrom(server->sockfd, buf, BUF_SIZE);
+		if (rfs_recvData(-1)) {
+
+			ssize_t status = rfs_recvFrom(buf, BUF_SIZE);
 			if (isDropPacket(server->packetLoss))
 				continue;
 

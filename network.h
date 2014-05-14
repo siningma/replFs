@@ -54,16 +54,19 @@
 
 typedef	struct sockaddr_in			Sockaddr;
 
-Sockaddr         groupAddr;
-uint32_t msgSeqNum = 0;
-
 class NetworkInstance {
 public:
 	int packetLoss;
 	int sockfd;
 	uint32_t nodeId;
+	Sockaddr groupAddr;
+	uint32_t msgSeqNum;
 
 	NetworkInstance(int packetLoss, int sockfd, uint32_t nodeId);
+	int rfs_netInit(unsigned short port);
+	ssize_t rfs_sendTo(char *buf, int length);
+	bool rfs_recvData(int pollTimeout);
+	ssize_t rfs_recvFrom(char* buf, int length);
 };
 
 class Message {
@@ -131,10 +134,5 @@ uint32_t getMsgSeqNum();
 bool isTimeOut(struct timeval *curr, struct timeval *last, uint32_t millisecond);
 bool isDrop(int packetLoss);
 bool isDropPacket(int packetLoss);
-
-int rfs_netInit(unsigned short port);
-ssize_t rfs_sendTo(int sockfd, char *buf, int length);
-bool rfs_recvData(int sockfd, int pollTimeout);
-ssize_t rfs_recvFrom(int sockfd, char* buf, int length);
 
 #endif

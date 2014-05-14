@@ -18,7 +18,7 @@ void getCurrentTime(struct timeval *tv) {
 	gettimeofday(tv, NULL);  	
 }
 
-uint32_t getMsgSeqNum() {
+uint32_t getMsgSeqNum(uint32_t msgSeqNum) {
 	if (msgSeqNum == 10000000) {
 		msgSeqNum = 0;
 		return msgSeqNum;
@@ -44,21 +44,21 @@ bool isDropPacket(int packetLoss) {
 	}
 }
 
-int rfs_netInit(unsigned short port) {
+void NetworkInstance:: rfs_netInit(unsigned short port) {
 	Sockaddr		nullAddr;
 	int				reuse;
 	u_char          ttl;
 	struct ip_mreq  mreq;
 
-	int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-	if (sockfd < 0)
+	this->sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (this->sockfd < 0)
 	  RFSError("can't get socket");
 
 	/* SO_REUSEADDR allows more than one binding to the same
 	   socket - you cannot have more than one player on one
 	   machine without this */
 	reuse = 1;
-	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &reuse,
+	if (setsockopt(this->sockfd, SOL_SOCKET, SO_REUSEADDR, &reuse,
 		   sizeof(reuse)) < 0) {
 		RFSError("setsockopt failed (SO_REUSEADDR)");
 	}
@@ -66,7 +66,7 @@ int rfs_netInit(unsigned short port) {
 	nullAddr.sin_family = AF_INET;
 	nullAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	nullAddr.sin_port = htons(port);
-	if (bind(sockfd, (struct sockaddr *)&nullAddr,
+	if (bind(this->sockfd, (struct sockaddr *)&nullAddr,
 		 sizeof(nullAddr)) < 0)
 	  RFSError("netInit binding");
 
@@ -83,7 +83,7 @@ int rfs_netInit(unsigned short port) {
 	*/
 
 	ttl = 1;
-	if (setsockopt(sockfd, IPPROTO_IP, IP_MULTICAST_TTL, &ttl,
+	if (setsockopt(this->sockfd, IPPROTO_IP, IP_MULTICAST_TTL, &ttl,
 		   sizeof(ttl)) < 0) {
 		RFSError("setsockopt failed (IP_MULTICAST_TTL)");
 	}
@@ -91,29 +91,27 @@ int rfs_netInit(unsigned short port) {
 	/* join the multicast group */
 	mreq.imr_multiaddr.s_addr = htonl(RFSGROUP);
 	mreq.imr_interface.s_addr = htonl(INADDR_ANY);
-	if (setsockopt(sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)
+	if (setsockopt(this->sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)
 		   &mreq, sizeof(mreq)) < 0) {
 		RFSError("setsockopt failed (IP_ADD_MEMBERSHIP)");
 	}
 
 	/* Get the multi-cast address ready to use in SendData()
            calls. */
-	memcpy(&groupAddr, &nullAddr, sizeof(Sockaddr));
-	groupAddr.sin_addr.s_addr = htonl(RFSGROUP);
-
-	return sockfd;
+	memcpy(&this->groupAddr, &nullAddr, sizeof(Sockaddr));
+	this->groupAddr.sin_addr.s_addr = htonl(RFSGROUP);
 }
 
-ssize_t rfs_sendTo(int sockfd, char *buf, int length) {
-	ssize_t cc = sendto(sockfd, buf, length, 0, 
-		(struct sockaddr *)&groupAddr, sizeof(Sockaddr));
+ssize_t NetworkInstance:: rfs_sendTo(char *buf, int length) {
+	ssize_t cc = sendto(this->sockfd, buf, length, 0, 
+		(struct sockaddr *)&this->groupAddr, sizeof(Sockaddr));
 
 	return cc;
 }
 
-bool rfs_recvData(int sockfd, int pollTimeout) {
+bool NetworkInstance:: rfs_recvData(int pollTimeout) {
     struct pollfd udp;
-    udp.fd = sockfd;
+    udp.fd = this->sockfd;
     udp.events = POLLIN;
 
     int ret = poll(&udp, 1, pollTimeout);
@@ -128,10 +126,10 @@ bool rfs_recvData(int sockfd, int pollTimeout) {
     }
 }
 
-ssize_t rfs_recvFrom(int sockfd, char* buf, int length) {
+ssize_t NetworkInstance:: rfs_recvFrom(char* buf, int length) {
 	socklen_t fromLen = sizeof(Sockaddr);
-	ssize_t cc = recvfrom(sockfd, buf, length, 0, 
-		(struct sockaddr *)&groupAddr, &fromLen);
+	ssize_t cc = recvfrom(this->sockfd, buf, length, 0, 
+		(struct sockaddr *)&this->groupAddr, &fromLen);
 	
 	printf("recv data: %d\n", cc);
 	if (cc < 0 && errno != EINTR)
@@ -144,4 +142,5 @@ NetworkInstance:: NetworkInstance(int packetLoss, int sockfd, uint32_t nodeId) {
 	this->packetLoss = packetLoss;
 	this->sockfd = sockfd;
 	this->nodeId = nodeId;
+	this->msgSeqNum = 0;
 }

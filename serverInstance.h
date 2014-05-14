@@ -18,10 +18,9 @@ public:
 
 	ServerInstance(int packetLoss, int sockfd, uint32_t nodeId, char* filePath);
 
+	void execute();
 	void sendInitAckMessage();
 	int procInitMessage(char *buf);
 };
-
-void execute();
 
 #endif
