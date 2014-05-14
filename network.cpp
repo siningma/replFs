@@ -124,17 +124,19 @@ ssize_t rfs_recvFrom(int sockfd, char* buf, int length) {
 	struct timeval timeout;
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 0;
-	while ((ret = select(32, &fdmask, NULL, NULL, &timeout)) == -1) {
+	while ((ret = select(sockfd + 1, &fdmask, NULL, NULL, &timeout)) == -1) {
 	    if (errno != EINTR)
 	    	RFSError("select error on events");
 	}
 
-	socklen_t fromLen = sizeof(Sockaddr);
-	ssize_t cc = recvfrom(sockfd, buf, length, 0, 
-		(struct sockaddr *)&groupAddr, &fromLen);
-	
-	if (cc < 0 && errno != EINTR)
-		perror("event recvfrom");
+	if (FD_ISSET(socket, &fdmask)) {
+		socklen_t fromLen = sizeof(Sockaddr);
+		ssize_t cc = recvfrom(sockfd, buf, length, 0, 
+			(struct sockaddr *)&groupAddr, &fromLen);
+		
+		if (cc < 0 && errno != EINTR)
+			perror("event recvfrom");
+	}
 
 	return cc;
 }
