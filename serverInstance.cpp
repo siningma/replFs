@@ -72,7 +72,7 @@ void ServerInstance:: execute() {
 						procInitMessage(buf);
 						break;
 					}
-					case OPEN:
+					case OPENFILE:
 					{
 						procOpenMessage(buf);
 					}
