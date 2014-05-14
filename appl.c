@@ -29,7 +29,7 @@ main() {
   /* Initialize the system     */
   /*****************************/
   
-  if( InitReplFs( ReplFsPort, 0, 0 ) < 0 ) {
+  if( InitReplFs( ReplFsPort, 0, 1 ) < 0 ) {
     fprintf( stderr, "Error initializing the system\n" );
     return( ErrorExit );
   }

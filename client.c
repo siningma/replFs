@@ -32,10 +32,10 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
     /* Initialize network access, local state, etc.     */
     /****************************************************/
 
-    int socket = rfs_netInit(portNum);
+    int sockfd = rfs_netInit(portNum);
     srand (time(NULL));
     uint32_t nodeId = (uint32_t)rand();
-    client = new ClientInstance(packetLoss, socket, nodeId, numServers);
+    client = new ClientInstance(packetLoss, sockfd, nodeId, numServers);
 
     struct timeval first;
     struct timeval last;
@@ -47,18 +47,21 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
 
         getCurrentTime(&now);
         if (isTimeOut(&now, &last, SEND_MSG_INTERVAL)) {
+            printf("in loop 1\n");
             client->sendInitMessage();
             getCurrentTime(&last);
         }
 
+        printf("in loop 2\n");
         getCurrentTime(&now);
         if (isTimeOut(&now, &first, 2000)) {
+          printf("in loop 3\n");
             break;
         } else {
             char buf[HEADER_SIZE];
             memset(buf, 0, HEADER_SIZE);
-
-            int status = rfs_recvFrom(socket, buf, HEADER_SIZE);
+            printf("in loop 4\n");
+            int status = rfs_recvFrom(client->sockfd, buf, HEADER_SIZE);
             client->procInitAckMessage(buf);
         }
 
