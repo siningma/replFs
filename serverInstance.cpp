@@ -75,6 +75,7 @@ void ServerInstance:: execute() {
 					case OPENFILE:
 					{
 						procOpenFileMessage(buf);
+						break;
 					}
 					default:
 					break;

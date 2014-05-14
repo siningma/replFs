@@ -22,12 +22,8 @@ bool isTimeOut(struct timeval *curr, struct timeval *last, uint32_t millisecond)
 	return ((curr->tv_sec - last->tv_sec) * 1000 + (curr->tv_usec - last->tv_usec) / 1000) >= millisecond;
 }
 
-bool isDrop(int packetLoss) {
-	return ((unsigned int)rand() % 100) < packetLoss;
-}
-
 bool isDropPacket(int packetLoss) { 
-	return isDrop(packetLoss);
+	return ((unsigned int)rand() % 100) < packetLoss;
 }
 
 NetworkInstance:: NetworkInstance(int packetLoss, uint32_t nodeId, unsigned int group) {

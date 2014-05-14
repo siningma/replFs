@@ -253,7 +253,6 @@ public:
 void RFSError(char *s);
 void getCurrentTime(struct timeval *tv);
 bool isTimeOut(struct timeval *curr, struct timeval *last, uint32_t millisecond);
-bool isDrop(int packetLoss);
 bool isDropPacket(int packetLoss);
 
 #endif
