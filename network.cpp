@@ -115,7 +115,7 @@ ssize_t rfs_sendTo(int sockfd, char *buf, int length) {
 }
 
 ssize_t rfs_recvFrom(int sockfd, char* buf, int length) {
-	fd_set	fdmask;
+	fd_set fdmask;
 	int	ret;
 
 	FD_ZERO(&fdmask);
