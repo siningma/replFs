@@ -63,9 +63,9 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
             memset(buf, 0, HEADER_SIZE);
 
             printf("in loop 4\n");
-            if (client->rfs_recvData(client->sockfd, 0)) {
+            if (client->rfs_recvData(0)) {
                 int status = client->rfs_recvFrom(buf, HEADER_SIZE);
-                
+
                 if (status > 0) {
                     printf("in loop 5\n");
                     client->procInitAckMessage(buf);
@@ -75,7 +75,7 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
 
     }
 
-    printf("serverId count: %d\n", client->serverIds.size());
+    printf("serverId count: %u\n", client->serverIds.size());
     if ((int)client->serverIds.size() < numServers)
         return ( ErrorReturn );
     else

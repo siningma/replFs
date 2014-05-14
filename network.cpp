@@ -138,9 +138,8 @@ ssize_t NetworkInstance:: rfs_recvFrom(char* buf, int length) {
 	return cc;
 }
 
-NetworkInstance:: NetworkInstance(int packetLoss, int sockfd, uint32_t nodeId) {
+NetworkInstance:: NetworkInstance(int packetLoss, uint32_t nodeId) {
 	this->packetLoss = packetLoss;
-	this->sockfd = sockfd;
 	this->nodeId = nodeId;
 	this->msgSeqNum = 0;
 }

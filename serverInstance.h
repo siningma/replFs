@@ -16,7 +16,7 @@ class ServerInstance: public NetworkInstance {
 public:
 	char *filePath;
 
-	ServerInstance(int packetLoss, int sockfd, uint32_t nodeId, char* filePath);
+	ServerInstance(int packetLoss, uint32_t nodeId, char* filePath);
 
 	void execute();
 	void sendInitAckMessage();

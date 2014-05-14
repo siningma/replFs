@@ -7,7 +7,7 @@
 
 #include "clientInstance.h"
 
-ClientInstance:: ClientInstance(int packetLoss, int sockfd, uint32_t nodeId, int numServers): NetworkInstance(packetLoss, sockfd, nodeId) {
+ClientInstance:: ClientInstance(int packetLoss, uint32_t nodeId, int numServers): NetworkInstance(packetLoss, nodeId) {
 	this->numServers = numServers;
 }
 
