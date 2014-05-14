@@ -118,7 +118,8 @@ bool rfs_recvData(int sockfd, int pollTimeout) {
 
     int ret = poll(&udp, 1, pollTimeout);
     if (ret < 0) {
-        RFSError("poll error");    
+        RFSError("poll error"); 
+        return false;  
     } else {
         if (udp.revents & POLLIN)
         	return true;
