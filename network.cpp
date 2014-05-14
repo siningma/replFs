@@ -18,15 +18,6 @@ void getCurrentTime(struct timeval *tv) {
 	gettimeofday(tv, NULL);  	
 }
 
-uint32_t getMsgSeqNum(uint32_t msgSeqNum) {
-	if (msgSeqNum == 10000000) {
-		msgSeqNum = 0;
-		return msgSeqNum;
-	} else {
-		return msgSeqNum++;
-	}
-}
-
 bool isTimeOut(struct timeval *curr, struct timeval *last, uint32_t millisecond) {
 	return ((curr->tv_sec - last->tv_sec) * 1000 + (curr->tv_usec - last->tv_usec) / 1000) >= millisecond;
 }
@@ -42,6 +33,12 @@ bool isDropPacket(int packetLoss) {
 	} else {
 		return false;
 	}
+}
+
+NetworkInstance:: NetworkInstance(int packetLoss, uint32_t nodeId) {
+	this->packetLoss = packetLoss;
+	this->nodeId = nodeId;
+	this->msgSeqNum = 0;
 }
 
 void NetworkInstance:: rfs_netInit(unsigned short port) {
@@ -131,15 +128,18 @@ ssize_t NetworkInstance:: rfs_recvFrom(char* buf, int length) {
 	ssize_t cc = recvfrom(this->sockfd, buf, length, 0, 
 		(struct sockaddr *)&this->groupAddr, &fromLen);
 	
-	printf("recv data: %d\n", cc);
+	printf("recv data: %d\n", (int)cc);
 	if (cc < 0 && errno != EINTR)
 		perror("event recvfrom");
 
 	return cc;
 }
 
-NetworkInstance:: NetworkInstance(int packetLoss, uint32_t nodeId) {
-	this->packetLoss = packetLoss;
-	this->nodeId = nodeId;
-	this->msgSeqNum = 0;
+uint32_t NetworkInstance:: getMsgSeqNum() {
+	if (msgSeqNum == 10000000) {
+		msgSeqNum = 0;
+		return msgSeqNum;
+	} else {
+		return msgSeqNum++;
+	}
 }

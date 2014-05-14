@@ -63,7 +63,7 @@ public:
 	uint32_t msgSeqNum;
 
 	NetworkInstance(int packetLoss, uint32_t nodeId);
-	int rfs_netInit(unsigned short port);
+	void rfs_netInit(unsigned short port);
 	ssize_t rfs_sendTo(char *buf, int length);
 	bool rfs_recvData(int pollTimeout);
 	ssize_t rfs_recvFrom(char* buf, int length);
