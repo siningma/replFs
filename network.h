@@ -72,6 +72,8 @@ public:
 	ssize_t rfs_sendTo(char *buf, int length);
 	bool rfs_recvData(int pollTimeout);
 	ssize_t rfs_recvFrom(char* buf, int length);
+
+	void dropOrSendMessage(Message *msg, char *buf, int len);
 };
 
 class Message {
