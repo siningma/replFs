@@ -46,8 +46,6 @@ bool isDropPacket(int packetLoss) {
 
 int rfs_netInit(unsigned short port) {
 	Sockaddr		nullAddr;
-	Sockaddr		*thisHost;
-	char			buf[128];
 	int				reuse;
 	u_char          ttl;
 	struct ip_mreq  mreq;
@@ -111,6 +109,22 @@ ssize_t rfs_sendTo(int sockfd, char *buf, int length) {
 		(struct sockaddr *)&groupAddr, sizeof(Sockaddr));
 
 	return cc;
+}
+
+bool rfs_recvData(int sockfd, int pollTimeout) {
+    struct pollfd udp;
+    udp.fd = sockfd;
+    udp.events = POLLIN;
+
+    int ret = poll(&udp, 1, pollTimeout);
+    if (ret < 0) {
+        RFSError("poll error");    
+    } else {
+        if (udp.revents & POLLIN)
+        	return true;
+        else
+        	return false;
+    }
 }
 
 ssize_t rfs_recvFrom(int sockfd, char* buf, int length) {

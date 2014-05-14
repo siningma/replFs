@@ -41,6 +41,7 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
     struct timeval last;
     struct timeval now;
 
+    memset(&last, 0, sizeof(struct timeval));
     getCurrentTime(&first);
     while(1) {
         printf("in loop\n");
@@ -62,10 +63,12 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
             memset(buf, 0, HEADER_SIZE);
 
             printf("in loop 4\n");
-            int status = rfs_recvFrom(client->sockfd, buf, HEADER_SIZE);
-            if (status > 0) {
-                printf("in loop 5\n");
-                client->procInitAckMessage(buf);
+            if (rfs_recvData(client->sockfd, 0)) {
+                int status = rfs_recvFrom(client->sockfd, buf, HEADER_SIZE);
+                if (status > 0) {
+                    printf("in loop 5\n");
+                    client->procInitAckMessage(buf);
+                }
             }
         }
 

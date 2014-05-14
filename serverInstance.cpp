@@ -74,21 +74,24 @@ void execute() {
 	while(1) {
 		memset(buf, 0, BUF_SIZE);
 
-		ssize_t status = rfs_recvFrom(server->sockfd, buf, BUF_SIZE);
-		if (isDropPacket(server->packetLoss))
-			continue;
+		if (rfs_recvData(this->sockfd, -1)) {
+			
+			ssize_t status = rfs_recvFrom(server->sockfd, buf, BUF_SIZE);
+			if (isDropPacket(server->packetLoss))
+				continue;
 
-		if (status > 0) {
-			unsigned char msgType = buf[0];
+			if (status > 0) {
+				unsigned char msgType = buf[0];
 
-			switch(msgType) {
-				case INIT:
-				{
-					server->procInitMessage(buf);
+				switch(msgType) {
+					case INIT:
+					{
+						server->procInitMessage(buf);
+						break;
+					}
+					default:
 					break;
 				}
-				default:
-				break;
 			}
 		}
 	}

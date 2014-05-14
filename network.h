@@ -53,8 +53,8 @@
 
 typedef	struct sockaddr_in			Sockaddr;
 
-static Sockaddr         groupAddr;
-static uint32_t msgSeqNum = 0;
+Sockaddr         groupAddr;
+uint32_t msgSeqNum = 0;
 
 class NetworkInstance {
 public:
@@ -133,6 +133,7 @@ bool isDropPacket(int packetLoss);
 
 int rfs_netInit(unsigned short port);
 ssize_t rfs_sendTo(int sockfd, char *buf, int length);
+bool rfs_recvData(int sockfd, int pollTimeout);
 ssize_t rfs_recvFrom(int sockfd, char* buf, int length);
 
 #endif
