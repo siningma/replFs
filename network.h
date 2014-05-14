@@ -166,7 +166,7 @@ public:
 	}
 };
 
-class OpenFileAckMessage: public Message() {
+class OpenFileAckMessage: public Message {
 public:
 	int fileDesc;
 
