@@ -52,11 +52,11 @@ void ServerInstance:: execute() {
 	while(1) {
 		memset(buf, 0, BUF_SIZE);
 
-		printf("Server in loop\n");
-		if (rfs_recvData(-1)) {	// server is blocking IO
+		if (rfs_recvData(100)) {	// server is blocking IO
 
 			ssize_t status = rfs_recvFrom(buf, BUF_SIZE);
-			printf("Server recv status: %d\n", (int)status);
+			
+			printf("Server recv message size: %d\n", (int)status);
 			if (isMessageSentByMe(buf))
 				continue;
 
@@ -91,14 +91,7 @@ void ServerInstance:: sendInitAckMessage() {
 	memset(buf, 0, HEADER_SIZE);
 	initAckMsg.serialize(buf);
 
-	if (isDropPacket(packetLoss)) {
-		printf("Drop Message: ");
-		initAckMsg.print();
-	} else {
-		printf("Send Message: ");
-		initAckMsg.print();
-		rfs_sendTo(buf, HEADER_SIZE);
-	}
+	dropOrSendMessage(&initAckMsg, buf, HEADER_SIZE);
 }
 
 int ServerInstance:: procInitMessage(char *buf) {
@@ -119,14 +112,7 @@ void ServerInstance:: sendOpenFileAckMessage(int fileDesc) {
 	memset(buf, 0, HEADER_SIZE);
 	openFileAckMessage.serialize(buf);
 
-	if (isDropPacket(packetLoss)) {
-		printf("Drop Message: ");
-		openFileAckMessage.print();
-	} else {
-		printf("Send Message: ");
-		openFileAckMessage.print();
-		rfs_sendTo(buf, HEADER_SIZE + 4);
-	}
+	dropOrSendMessage(&openFileAckMessage, buf, HEADER_SIZE);
 }
 
 int ServerInstance:: procOpenFileMessage(char *buf) {

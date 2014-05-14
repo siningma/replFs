@@ -18,14 +18,7 @@ void ClientInstance:: sendInitMessage() {
 	memset(buf, 0, HEADER_SIZE);
 	initMsg.serialize(buf);
 	
-	if (isDropPacket(packetLoss)) {
-		printf("Drop Message: ");
-		initMsg.print();
-	} else {
-		printf("Send Message: ");
-		initMsg.print();
-		rfs_sendTo(buf, HEADER_SIZE);
-	}
+	dropOrSendMessage(&initMsg, buf, HEADER_SIZE);
 }
 
 int ClientInstance:: procInitAckMessage(char *buf) {
@@ -54,14 +47,7 @@ void ClientInstance:: sendOpenFileMessage(uint32_t fileId, char* filename) {
 	memset(buf, 0, HEADER_SIZE + 4 + strlen(filename));
 	openFileMsg.serialize(buf);
 	
-	if (isDropPacket(packetLoss)) {
-		printf("Drop Message: ");
-		openFileMsg.print();
-	} else {
-		printf("Send Message: ");
-		openFileMsg.print();
-		rfs_sendTo(buf, HEADER_SIZE + 4 + strlen(filename));
-	}
+	dropOrSendMessage(&openFileMsg, buf, HEADER_SIZE + 4 + strlen(filename));
 }
 
 int ClientInstance:: procOpenFileAckMessage(char *buf) {

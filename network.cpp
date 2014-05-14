@@ -129,6 +129,18 @@ ssize_t NetworkInstance:: rfs_recvFrom(char* buf, int length) {
 	return cc;
 }
 
+void NetworkInstance:: dropOrSendMessage(Message *msg, char *buf, int len) {
+	if (isDropPacket(packetLoss)) {
+		printf("Drop Message: ");
+		msg->print();
+	} else {
+		printf("Send Message: ");
+		msg->print();
+		rfs_sendTo(buf, len);
+	}
+}
+
+
 uint32_t NetworkInstance:: getMsgSeqNum() {
 	if (msgSeqNum == (uint32_t)~0) {
 		msgSeqNum = 0;

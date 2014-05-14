@@ -194,6 +194,62 @@ public:
 	}
 };
 
+class CloseMessage: public Message {
+public:
+	uint32_t fileId;
+
+	CloseMessage() {}
+	CloseMessage(uint32_t nodeId, uint32_t seqNum, uint32_t fileId): Message(CLOSE, nodeId, seqNum){
+		this->fileId = fileId;
+	}
+
+	void serialize(char *buf) {
+		Message::serialize(buf);
+		uint32_t msg_fileId = htonl(fileId);
+		memcpy(buf + HEADER_SIZE, &msg_fileId, 4);
+	}
+
+	void deserialize(char *buf) { 
+		Message::deserialize(buf);
+		uint32_t msg_fileId = 0;
+		memcpy(&msg_fileId, buf + 2, 4);
+		this->fileId = ntohl(msg_fileId);
+	}
+
+	void print() { 
+		Message::print();
+		printf("FileId: %u\n", fileId);
+	}
+};
+
+class CloseAckMessage: public Message {
+public:
+	int fileDesc;
+
+	CloseAckMessage() {}
+	CloseAckMessage(uint32_t nodeId, uint32_t seqNum, int fileDesc): Message(CLOSEACK, nodeId, seqNum) {
+		this->fileDesc = fileDesc;
+	}
+
+	void serialize(char *buf) {
+		Message::serialize(buf);
+		int msg_fileDesc = htonl(fileDesc);
+		memcpy(buf + HEADER_SIZE, &msg_fileDesc, 4);
+	}
+
+	void deserialize(char *buf) { 
+		Message::deserialize(buf);
+		int msg_fileDesc = 0;
+		memcpy(&msg_fileDesc, buf + 2, 4);
+		this->fileDesc = ntohl(msg_fileDesc);
+	}
+
+	void print() { 
+		Message::print();
+		printf("FileDesc: %d\n", fileDesc);
+	}
+};
+
 void RFSError(char *s);
 void getCurrentTime(struct timeval *tv);
 bool isTimeOut(struct timeval *curr, struct timeval *last, uint32_t millisecond);
