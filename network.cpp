@@ -102,7 +102,10 @@ bool NetworkInstance:: rfs_recvData(int pollTimeout) {
     udp.fd = this->sockfd;
     udp.events = POLLIN;
 
+    printf("poll data before\n");
     int ret = poll(&udp, 1, pollTimeout);
+   	printf("poll data after\n");
+
     if (ret < 0) {
         RFSError("poll error"); 
         return false;  
