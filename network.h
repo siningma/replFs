@@ -63,6 +63,8 @@ public:
 	uint32_t msgSeqNum;
 
 	NetworkInstance(int packetLoss, uint32_t nodeId);
+
+	uint32_t getMsgSeqNum();
 	void rfs_netInit(unsigned short port);
 	ssize_t rfs_sendTo(char *buf, int length);
 	bool rfs_recvData(int pollTimeout);
@@ -130,7 +132,6 @@ public:
 
 void RFSError(char *s);
 void getCurrentTime(struct timeval *tv);
-uint32_t getMsgSeqNum();
 bool isTimeOut(struct timeval *curr, struct timeval *last, uint32_t millisecond);
 bool isDrop(int packetLoss);
 bool isDropPacket(int packetLoss);
