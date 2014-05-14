@@ -31,14 +31,14 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	int socket = rfs_netInit(port);
+	int sockfd = rfs_netInit(port);
 
-	server = new ServerInstance(packetLoss, socket, nodeId, filePath);
+	server = new ServerInstance(packetLoss, sockfd, nodeId, filePath);
 	execute();
 	return 0;
 }
 
-ServerInstance:: ServerInstance(int packetLoss, int socket, uint32_t nodeId, char* filePath): NetworkInstance(packetLoss, socket, nodeId) {
+ServerInstance:: ServerInstance(int packetLoss, int sockfd, uint32_t nodeId, char* filePath): NetworkInstance(packetLoss, sockfd, nodeId) {
 	int len = strlen(filePath) + 1;
 
 	this->filePath = new char[len];
@@ -56,7 +56,7 @@ void ServerInstance:: sendInitAckMessage() {
 
 	if (isDropPacket(packetLoss))
 		return;
-	rfs_sendTo(this->socket, buf, HEADER_SIZE);
+	rfs_sendTo(this->sockfd, buf, HEADER_SIZE);
 }
 
 int ServerInstance:: procInitMessage(char *buf) {
