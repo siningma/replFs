@@ -21,7 +21,6 @@ void ClientInstance:: sendInitMessage() {
 	if (isDropPacket(packetLoss)) {
 		printf("Drop Message: ");
 		initMsg.print();
-		return;
 	} else {
 		printf("Send Message: ");
 		initMsg.print();
@@ -32,6 +31,8 @@ void ClientInstance:: sendInitMessage() {
 int ClientInstance:: procInitAckMessage(char *buf) {
 	InitAckMessage initAckMessage;
 	initAckMessage.deserialize(buf);
+
+	printf("Receive Message: ");
 	initAckMessage.print();
 
 	if ((int)serverIds.size() == numServers)

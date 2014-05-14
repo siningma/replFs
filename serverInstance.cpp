@@ -67,6 +67,8 @@ void ServerInstance:: sendInitAckMessage() {
 int ServerInstance:: procInitMessage(char *buf) {
 	InitMessage initMessage;
 	initMessage.deserialize(buf);
+
+	printf("Receive Message: ");
 	initMessage.print();
 
 	sendInitAckMessage();
@@ -85,7 +87,6 @@ void ServerInstance:: execute() {
 			if (isDropPacket(server->packetLoss))
 				continue;
 
-			printf("\n");
 			if (status > 0) {
 				unsigned char msgType = buf[0];
 
