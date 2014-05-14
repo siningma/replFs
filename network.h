@@ -60,10 +60,10 @@ static uint32_t msgSeqNum = 0;
 class NetworkInstance {
 public:
 	int packetLoss;
-	int socket;
+	int sockfd;
 	uint32_t nodeId;
 
-	NetworkInstance(int packetLoss, int socket, uint32_t nodeId);
+	NetworkInstance(int packetLoss, int sockfd, uint32_t nodeId);
 };
 
 class Message {

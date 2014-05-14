@@ -7,7 +7,7 @@
 
 #include "clientInstance.h"
 
-ClientInstance:: ClientInstance(int packetLoss, int socket, uint32_t nodeId, int numServers): NetworkInstance(packetLoss, socket, nodeId) {
+ClientInstance:: ClientInstance(int packetLoss, int sockfd, uint32_t nodeId, int numServers): NetworkInstance(packetLoss, sockfd, nodeId) {
 	this->numServers = numServers;
 }
 
@@ -21,7 +21,7 @@ void ClientInstance:: sendInitMessage() {
 	
 	if (isDropPacket(packetLoss))
 		return;
-	rfs_sendTo(this->socket, buf, HEADER_SIZE);
+	rfs_sendTo(this->sockfd, buf, HEADER_SIZE);
 }
 
 int ClientInstance:: procInitAckMessage(char *buf) {
