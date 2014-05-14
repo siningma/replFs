@@ -136,7 +136,7 @@ ssize_t NetworkInstance:: rfs_recvFrom(char* buf, int length) {
 }
 
 uint32_t NetworkInstance:: getMsgSeqNum() {
-	if (msgSeqNum == UINT32_MAX) {
+	if (msgSeqNum == 100000000) {
 		msgSeqNum = 0;
 		return msgSeqNum;
 	} else {
