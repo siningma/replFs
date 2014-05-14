@@ -40,7 +40,6 @@ bool isDropPacket(int packetLoss) {
 		printf(" Drop\n");
 		return true;
 	} else {
-		printf(" Send\n");
 		return false;
 	}
 }
