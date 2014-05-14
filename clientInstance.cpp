@@ -17,11 +17,16 @@ void ClientInstance:: sendInitMessage() {
 	char buf[HEADER_SIZE];
 	memset(buf, 0, HEADER_SIZE);
 	initMsg.serialize(buf);
-	initMsg.print();
 	
-	if (isDropPacket(packetLoss))
+	if (isDropPacket(packetLoss)) {
+		printf("Drop Message: ");
+		initMsg.print();
 		return;
-	rfs_sendTo(buf, HEADER_SIZE);
+	} else {
+		printf("Send Message: ");
+		initMsg.print();
+		rfs_sendTo(buf, HEADER_SIZE);
+	}
 }
 
 int ClientInstance:: procInitAckMessage(char *buf) {

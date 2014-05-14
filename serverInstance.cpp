@@ -53,11 +53,15 @@ void ServerInstance:: sendInitAckMessage() {
 	char buf[HEADER_SIZE];
 	memset(buf, 0, HEADER_SIZE);
 	initAckMsg.serialize(buf);
-	initAckMsg.print();
 
-	if (isDropPacket(packetLoss))
-		return;
-	rfs_sendTo(buf, HEADER_SIZE);
+	if (isDropPacket(packetLoss)) {
+		printf("Drop Message: ");
+		initAckMsg.print();
+	} else {
+		printf("Send Message: ");
+		initAckMsg.print();
+		rfs_sendTo(buf, HEADER_SIZE);
+	}
 }
 
 int ServerInstance:: procInitMessage(char *buf) {

@@ -27,12 +27,7 @@ bool isDrop(int packetLoss) {
 }
 
 bool isDropPacket(int packetLoss) { 
-	if (isDrop(packetLoss)) {
-		printf(" Drop\n");
-		return true;
-	} else {
-		return false;
-	}
+	return isDrop(packetLoss);
 }
 
 NetworkInstance:: NetworkInstance(int packetLoss, uint32_t nodeId) {
@@ -103,7 +98,6 @@ ssize_t NetworkInstance:: rfs_sendTo(char *buf, int length) {
 	ssize_t cc = sendto(this->sockfd, buf, length, 0, 
 		(struct sockaddr *)&this->groupAddr, sizeof(Sockaddr));
 
-	printf(" Send\n");
 	return cc;
 }
 
