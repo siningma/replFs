@@ -34,7 +34,7 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
 
     srand (time(NULL));
     uint32_t nodeId = (uint32_t)rand();
-    client = new ClientInstance(packetLoss, sockfd, nodeId, numServers);
+    client = new ClientInstance(packetLoss, nodeId, numServers);
     client->rfs_netInit(portNum);
 
     struct timeval first;
@@ -75,7 +75,7 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
 
     }
 
-    printf("serverId count: %u\n", client->serverIds.size());
+    printf("serverId count: %d\n", (int)client->serverIds.size());
     if ((int)client->serverIds.size() < numServers)
         return ( ErrorReturn );
     else
