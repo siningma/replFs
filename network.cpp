@@ -129,6 +129,7 @@ ssize_t rfs_recvFrom(int sockfd, char* buf, int length) {
 	    	RFSError("select error on events");
 	}
 
+	ssize_t cc = 0;
 	if (FD_ISSET(socket, &fdmask)) {
 		socklen_t fromLen = sizeof(Sockaddr);
 		ssize_t cc = recvfrom(sockfd, buf, length, 0, 
