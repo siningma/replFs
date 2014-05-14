@@ -51,6 +51,7 @@ void ServerInstance:: execute() {
 	while(1) {
 		memset(buf, 0, BUF_SIZE);
 
+		printf("Server in loop\n");
 		if (rfs_recvData(-1)) {	// server is blocking IO
 
 			ssize_t status = rfs_recvFrom(buf, BUF_SIZE);

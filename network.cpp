@@ -51,16 +51,14 @@ void NetworkInstance:: rfs_netInit(unsigned short port) {
 	   socket - you cannot have more than one player on one
 	   machine without this */
 	reuse = 1;
-	if (setsockopt(this->sockfd, SOL_SOCKET, SO_REUSEADDR, &reuse,
-		   sizeof(reuse)) < 0) {
+	if (setsockopt(this->sockfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) < 0) {
 		RFSError("setsockopt failed (SO_REUSEADDR)");
 	}
 
 	nullAddr.sin_family = AF_INET;
 	nullAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	nullAddr.sin_port = htons(port);
-	if (bind(this->sockfd, (struct sockaddr *)&nullAddr,
-		 sizeof(nullAddr)) < 0)
+	if (bind(this->sockfd, (struct sockaddr *)&nullAddr, sizeof(nullAddr)) < 0)
 	  RFSError("netInit binding");
 
 	/* Multicast TTL:
@@ -76,16 +74,14 @@ void NetworkInstance:: rfs_netInit(unsigned short port) {
 	*/
 
 	ttl = 1;
-	if (setsockopt(this->sockfd, IPPROTO_IP, IP_MULTICAST_TTL, &ttl,
-		   sizeof(ttl)) < 0) {
+	if (setsockopt(this->sockfd, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, sizeof(ttl)) < 0) {
 		RFSError("setsockopt failed (IP_MULTICAST_TTL)");
 	}
 
 	/* join the multicast group */
 	mreq.imr_multiaddr.s_addr = htonl(RFS_GROUP);
 	mreq.imr_interface.s_addr = htonl(INADDR_ANY);
-	if (setsockopt(this->sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)
-		   &mreq, sizeof(mreq)) < 0) {
+	if (setsockopt(this->sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq)) < 0) {
 		RFSError("setsockopt failed (IP_ADD_MEMBERSHIP)");
 	}
 
@@ -112,8 +108,6 @@ bool NetworkInstance:: rfs_recvData(int pollTimeout) {
         RFSError("poll error"); 
         return false;  
     } else {
-    	printf("Server poll data\n");
-    	
         if (udp.revents & POLLIN)
         	return true;
         else
