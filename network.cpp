@@ -34,6 +34,7 @@ NetworkInstance:: NetworkInstance(int packetLoss, uint32_t nodeId) {
 	this->packetLoss = packetLoss;
 	this->nodeId = nodeId;
 	this->msgSeqNum = 0;
+	memset(&this->groupAddr, 0, sizeof(Sockaddr));
 }
 
 void NetworkInstance:: rfs_netInit(unsigned short port) {

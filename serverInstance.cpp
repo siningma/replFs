@@ -45,34 +45,6 @@ ServerInstance:: ServerInstance(int packetLoss, uint32_t nodeId, char* filePath)
 	memcpy(this->filePath, filePath, len);
 }
 
-void ServerInstance:: sendInitAckMessage() {
-	InitAckMessage initAckMsg(this->nodeId, getMsgSeqNum());
-
-	char buf[HEADER_SIZE];
-	memset(buf, 0, HEADER_SIZE);
-	initAckMsg.serialize(buf);
-
-	if (isDropPacket(packetLoss)) {
-		printf("Drop Message: ");
-		initAckMsg.print();
-	} else {
-		printf("Send Message: ");
-		initAckMsg.print();
-		rfs_sendTo(buf, HEADER_SIZE);
-	}
-}
-
-int ServerInstance:: procInitMessage(char *buf) {
-	InitMessage initMessage;
-	initMessage.deserialize(buf);
-
-	printf("Recv Message: ");
-	initMessage.print();
-
-	sendInitAckMessage();
-	return 0;
-}
-
 void ServerInstance:: execute() {
 	char buf[BUF_SIZE];
 
@@ -103,4 +75,32 @@ void ServerInstance:: execute() {
 			}
 		}
 	}
+}
+
+void ServerInstance:: sendInitAckMessage() {
+	InitAckMessage initAckMsg(this->nodeId, getMsgSeqNum());
+
+	char buf[HEADER_SIZE];
+	memset(buf, 0, HEADER_SIZE);
+	initAckMsg.serialize(buf);
+
+	if (isDropPacket(packetLoss)) {
+		printf("Drop Message: ");
+		initAckMsg.print();
+	} else {
+		printf("Send Message: ");
+		initAckMsg.print();
+		rfs_sendTo(buf, HEADER_SIZE);
+	}
+}
+
+int ServerInstance:: procInitMessage(char *buf) {
+	InitMessage initMessage;
+	initMessage.deserialize(buf);
+
+	printf("Recv Message: ");
+	initMessage.print();
+
+	sendInitAckMessage();
+	return 0;
 }
