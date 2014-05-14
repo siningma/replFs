@@ -7,8 +7,6 @@
 
 #include "serverInstance.h"
 
-ServerInstance *server;
-
 int main(int argc, char *argv[]) {
 	if (argc != 7)
 		RFSError("Invalid command. Example: replFsServer -port 4137 -mount /folder1/fs244b -drop 3");
@@ -21,7 +19,7 @@ int main(int argc, char *argv[]) {
 	uint32_t nodeId = (uint32_t)rand();
 
 	printf("Server port: %u, filePath: %s, packetLoss: %d, nodeId: %010u\n", port, filePath, packetLoss, nodeId);
-	server = new ServerInstance(packetLoss, nodeId, filePath);
+	ServerInstance *server = new ServerInstance(packetLoss, nodeId, filePath);
 
 	int err = mkdir(filePath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	if (err == -1) {
@@ -87,7 +85,7 @@ void ServerInstance:: execute() {
 			if (isMessageSentByMe(buf))
 				continue;
 
-			if (isDropPacket(server->packetLoss))
+			if (isDropPacket(packetLoss))
 				continue;
 
 			if (status > 0) {
@@ -96,7 +94,7 @@ void ServerInstance:: execute() {
 				switch(msgType) {
 					case INIT:
 					{
-						server->procInitMessage(buf);
+						procInitMessage(buf);
 						break;
 					}
 					default:
