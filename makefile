@@ -9,7 +9,7 @@ C_DIR	= .
 
 INCDIR	= -I$(H)
 LIBDIRS = -L$(C_DIR)
-LIBS    = -lclientReplFs -lsocket -lnsl -lresolv
+LIBS    = -lclientReplFs -lnsl
 
 CLIENT_OBJECTS = client.o clientInstance.o network.o
 SERVER_OBJECTS = serverInstance.o network.o
