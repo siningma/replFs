@@ -119,6 +119,7 @@ ssize_t rfs_recvFrom(int sockfd, char* buf, int length) {
 	ssize_t cc = recvfrom(sockfd, buf, length, 0, 
 		(struct sockaddr *)&groupAddr, &fromLen);
 	
+	printf("recv data: %d\n", cc);
 	if (cc < 0 && errno != EINTR)
 		perror("event recvfrom");
 
