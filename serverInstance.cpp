@@ -75,12 +75,13 @@ void ServerInstance:: execute() {
 	while(1) {
 		memset(buf, 0, BUF_SIZE);
 
-		if (rfs_recvData(-1)) {
+		if (rfs_recvData(-1)) {	// server is blocking IO
 
 			ssize_t status = rfs_recvFrom(buf, BUF_SIZE);
 			if (isDropPacket(server->packetLoss))
 				continue;
 
+			printf("\n");
 			if (status > 0) {
 				unsigned char msgType = buf[0];
 

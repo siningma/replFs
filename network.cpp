@@ -86,7 +86,7 @@ void NetworkInstance:: rfs_netInit(unsigned short port) {
 	}
 
 	/* join the multicast group */
-	mreq.imr_multiaddr.s_addr = htonl(RFSGROUP);
+	mreq.imr_multiaddr.s_addr = htonl(RFS_GROUP);
 	mreq.imr_interface.s_addr = htonl(INADDR_ANY);
 	if (setsockopt(this->sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)
 		   &mreq, sizeof(mreq)) < 0) {
@@ -96,13 +96,14 @@ void NetworkInstance:: rfs_netInit(unsigned short port) {
 	/* Get the multi-cast address ready to use in SendData()
            calls. */
 	memcpy(&this->groupAddr, &nullAddr, sizeof(Sockaddr));
-	this->groupAddr.sin_addr.s_addr = htonl(RFSGROUP);
+	this->groupAddr.sin_addr.s_addr = htonl(RFS_GROUP);
 }
 
 ssize_t NetworkInstance:: rfs_sendTo(char *buf, int length) {
 	ssize_t cc = sendto(this->sockfd, buf, length, 0, 
 		(struct sockaddr *)&this->groupAddr, sizeof(Sockaddr));
 
+	printf(" Send\n");
 	return cc;
 }
 
@@ -128,7 +129,6 @@ ssize_t NetworkInstance:: rfs_recvFrom(char* buf, int length) {
 	ssize_t cc = recvfrom(this->sockfd, buf, length, 0, 
 		(struct sockaddr *)&this->groupAddr, &fromLen);
 	
-	printf("recv data: %d\n", (int)cc);
 	if (cc < 0 && errno != EINTR)
 		perror("event recvfrom");
 
@@ -136,7 +136,7 @@ ssize_t NetworkInstance:: rfs_recvFrom(char* buf, int length) {
 }
 
 uint32_t NetworkInstance:: getMsgSeqNum() {
-	if (msgSeqNum == 10000000) {
+	if (msgSeqNum == UINT32_MAX) {
 		msgSeqNum = 0;
 		return msgSeqNum;
 	} else {

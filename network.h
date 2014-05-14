@@ -19,6 +19,7 @@
 #include <arpa/inet.h>
 #include <time.h>
 
+#include <stdint.h>
 #include <unistd.h>
 #include <errno.h>
 #include <netdb.h>
@@ -33,7 +34,7 @@
 #define	FALSE		0
 #endif	/* TRUE */
 
-#define RFSGROUP       0xe0010101
+#define RFS_GROUP       0xe0010101
 
 #define INIT 			0xC0
 #define INITACK 		0xC1

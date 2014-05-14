@@ -34,7 +34,10 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
 
     srand (time(NULL));
     uint32_t nodeId = (uint32_t)rand();
+
     client = new ClientInstance(packetLoss, nodeId, numServers);
+    printf("Client port: %u, packetLoss: %d, numServers: %d, nodeId: %u\n", port, packetLoss, numServers, nodeId);
+
     client->rfs_netInit(portNum);
 
     struct timeval first;
@@ -44,30 +47,23 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
     memset(&last, 0, sizeof(struct timeval));
     getCurrentTime(&first);
     while(1) {
-        printf("in loop\n");
-
         getCurrentTime(&now);
         if (isTimeOut(&now, &last, SEND_MSG_INTERVAL)) {
-            printf("in loop 1\n");
             client->sendInitMessage();
             getCurrentTime(&last);
         }
 
-        printf("in loop 2\n");
         getCurrentTime(&now);
         if (isTimeOut(&now, &first, 2000)) {
-              printf("in loop 3\n");
               break;
         } else {
             char buf[HEADER_SIZE];
             memset(buf, 0, HEADER_SIZE);
 
-            printf("in loop 4\n");
-            if (client->rfs_recvData(0)) {
+            if (client->rfs_recvData(0)) {    // client is non-blocking IO
                 int status = client->rfs_recvFrom(buf, HEADER_SIZE);
 
                 if (status > 0) {
-                    printf("in loop 5\n");
                     client->procInitAckMessage(buf);
                 }
             }
@@ -75,7 +71,7 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
 
     }
 
-    printf("serverId count: %d\n", (int)client->serverIds.size());
+    printf("Receive serverId count: %d\n", (int)client->serverIds.size());
     if ((int)client->serverIds.size() < numServers)
         return ( ErrorReturn );
     else
