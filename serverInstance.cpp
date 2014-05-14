@@ -74,7 +74,7 @@ void execute() {
 	while(1) {
 		memset(buf, 0, BUF_SIZE);
 
-		ssize_t status = rfs_recvFrom(server->socket, buf, BUF_SIZE);
+		ssize_t status = rfs_recvFrom(server->sockfd, buf, BUF_SIZE);
 		if (isDropPacket(server->packetLoss))
 			continue;
 

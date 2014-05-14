@@ -133,7 +133,7 @@ bool isDrop(int packetLoss);
 bool isDropPacket(int packetLoss);
 
 int rfs_netInit(unsigned short port);
-ssize_t rfs_sendTo(int socket, char *buf, int length);
-ssize_t rfs_recvFrom(int socket, char* buf, int length);
+ssize_t rfs_sendTo(int sockfd, char *buf, int length);
+ssize_t rfs_recvFrom(int sockfd, char* buf, int length);
 
 #endif
