@@ -62,8 +62,9 @@ public:
 	uint32_t nodeId;
 	Sockaddr groupAddr;
 	uint32_t msgSeqNum;
+	unsigned int group;
 
-	NetworkInstance(int packetLoss, uint32_t nodeId);
+	NetworkInstance(int packetLoss, uint32_t nodeId, unsigned int group);
 
 	uint32_t getMsgSeqNum();
 	bool isMessageSentByMe(char *buf);

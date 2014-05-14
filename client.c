@@ -35,7 +35,7 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
     srand (time(NULL));
     uint32_t nodeId = (uint32_t)rand();
 
-    client = new ClientInstance(packetLoss, nodeId, numServers);
+    client = new ClientInstance(packetLoss, nodeId, numServers, RFS_GROUP);
     printf("Client port: %u, packetLoss: %d, numServers: %d, nodeId: %010u\n", portNum, packetLoss, numServers, nodeId);
 
     client->rfs_netInit(portNum);

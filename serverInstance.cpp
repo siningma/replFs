@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
 	uint32_t nodeId = (uint32_t)rand();
 
 	printf("Server port: %u, filePath: %s, packetLoss: %d, nodeId: %010u\n", port, filePath, packetLoss, nodeId);
-	ServerInstance *server = new ServerInstance(packetLoss, nodeId, filePath);
+	ServerInstance *server = new ServerInstance(packetLoss, nodeId, filePath, RFS_GROUP);
 
 	int err = mkdir(filePath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	if (err == -1) {
@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-ServerInstance:: ServerInstance(int packetLoss, uint32_t nodeId, char* filePath): NetworkInstance(packetLoss, nodeId) {
+ServerInstance:: ServerInstance(int packetLoss, uint32_t nodeId, char* filePath, unsigned int group): NetworkInstance(packetLoss, nodeId, group) {
 	int len = strlen(filePath) + 1;
 
 	this->filePath = new char[len];

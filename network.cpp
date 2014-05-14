@@ -30,9 +30,10 @@ bool isDropPacket(int packetLoss) {
 	return isDrop(packetLoss);
 }
 
-NetworkInstance:: NetworkInstance(int packetLoss, uint32_t nodeId) {
+NetworkInstance:: NetworkInstance(int packetLoss, uint32_t nodeId, unsigned int group) {
 	this->packetLoss = packetLoss;
 	this->nodeId = nodeId;
+	this->group = group;
 	this->msgSeqNum = 0;
 	memset(&this->groupAddr, 0, sizeof(Sockaddr));
 }
@@ -79,7 +80,7 @@ void NetworkInstance:: rfs_netInit(unsigned short port) {
 	}
 
 	/* join the multicast group */
-	mreq.imr_multiaddr.s_addr = htonl(RFS_GROUP);
+	mreq.imr_multiaddr.s_addr = htonl(this->group);
 	mreq.imr_interface.s_addr = htonl(INADDR_ANY);
 	if (setsockopt(this->sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq)) < 0) {
 		RFSError("setsockopt failed (IP_ADD_MEMBERSHIP)");
