@@ -8,7 +8,7 @@ public:
 	int numServers;
 	std::vector<uint32_t> serverIds;
 
-	ClientInstance(int packetLoss, uint32_t nodeId, int numServers);
+	ClientInstance(int packetLoss, uint32_t nodeId, int numServers, unsigned int group);
 	void sendInitMessage();
 	int procInitAckMessage(char *buf);
 };
