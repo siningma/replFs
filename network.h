@@ -92,12 +92,12 @@ public:
 	virtual void deserialize(char *buf) {
 		this->msgType = buf[0];
 		this->reserved = 0;
-		uint32_t nodeId = 0;
-		memcpy(&nodeId, buf + 2, 4);
-		this->nodeId = ntohl(nodeId);
-		uint32_t seqNum = 0;
-		memcpy(&seqNum, buf + 6, 4);
-		this->seqNum = ntohl(seqNum);
+		uint32_t msg_nodeId = 0;
+		memcpy(&msg_nodeId, buf + 2, 4);
+		this->nodeId = ntohl(msg_nodeId);
+		uint32_t msg_seqNum = 0;
+		memcpy(&msg_seqNum, buf + 6, 4);
+		this->seqNum = ntohl(msg_seqNum);
 	}
 
 	virtual void print() {

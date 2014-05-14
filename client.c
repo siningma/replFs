@@ -28,45 +28,44 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
 	     portNum, packetLoss, numServers );
 #endif
 
-  /****************************************************/
-  /* Initialize network access, local state, etc.     */
-  /****************************************************/
+    /****************************************************/
+    /* Initialize network access, local state, etc.     */
+    /****************************************************/
 
-  int socket = rfs_netInit(portNum);
-  srand (time(NULL));
-  uint32_t nodeId = (uint32_t)rand();
-  client = new ClientInstance(packetLoss, socket, nodeId, numServers);
+    int socket = rfs_netInit(portNum);
+    srand (time(NULL));
+    uint32_t nodeId = (uint32_t)rand();
+    client = new ClientInstance(packetLoss, socket, nodeId, numServers);
 
-  struct timeval first;
-  struct timeval last;
-  struct timeval now;
+    struct timeval first;
+    struct timeval last;
+    struct timeval now;
 
-  getCurrentTime(&first);
+    getCurrentTime(&first);
+    while(1) {
+        getCurrentTime(&now);
+        if (isTimeOut(&now, &last, SEND_MSG_INTERVAL)) {
+            client->sendInitMessage();
+            getCurrentTime(&last);
+        }
 
-  while(1) {
-      getCurrentTime(&now);
-      if (isTimeOut(&now, &last, SEND_MSG_INTERVAL)) {
-          client->sendInitMessage();
-      }
+        getCurrentTime(&now);
+        if (isTimeOut(&now, &first, 2000)) {
+            break;
+        } else {
+            char buf[HEADER_SIZE];
+            memset(buf, 0, HEADER_SIZE);
 
+            int status = rfs_recvFrom(socket, buf, HEADER_SIZE);
+            client->procInitAckMessage(buf);
+        }
 
-      getCurrentTime(&now);
-      if (isTimeOut(&now, &first, 2000)) {
-          break;
-      } else {
-          char buf[HEADER_SIZE];
-          memset(buf, 0, HEADER_SIZE);
+    }
 
-          int status = rfs_recvFrom(socket, buf, HEADER_SIZE);
-          client->procInitAckMessage(buf);
-      }
-
-  }
-
-  if ((int)client->serverIds.size() < numServers)
-      return ( ErrorReturn );
-  else
-      return( NormalReturn );  
+    if ((int)client->serverIds.size() < numServers)
+        return ( ErrorReturn );
+    else
+        return( NormalReturn );  
 }
 
 /* ------------------------------------------------------------------ */
