@@ -43,6 +43,8 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
 
     getCurrentTime(&first);
     while(1) {
+        printf("in loop\n");
+
         getCurrentTime(&now);
         if (isTimeOut(&now, &last, SEND_MSG_INTERVAL)) {
             client->sendInitMessage();
@@ -62,6 +64,7 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
 
     }
 
+    printf("serverId count: %d\n", client->serverIds.size());
     if ((int)client->serverIds.size() < numServers)
         return ( ErrorReturn );
     else

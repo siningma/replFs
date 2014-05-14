@@ -28,12 +28,7 @@ uint32_t getMsgSeqNum() {
 }
 
 bool isTimeOut(struct timeval *curr, struct timeval *last, uint32_t millisecond) {
-	double currTime = curr->tv_sec * 1000 + curr->tv_usec / 1000;
-	double lastTime = last->tv_sec * 1000 + last->tv_usec / 1000;
-
-	printf("currTime %f, lastTime: %f\n", currTime, lastTime);
-
-	return (currTime - lastTime) >= millisecond;
+	return ((curr->tv_sec - last->tv_sec) * 1000 + (curr->tv_usec - last->tv_usec) / 1000) >= millisecond;
 }
 
 bool isDrop(int packetLoss) {
