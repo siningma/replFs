@@ -55,27 +55,6 @@
 
 typedef	struct sockaddr_in			Sockaddr;
 
-class NetworkInstance {
-public:
-	int packetLoss;
-	int sockfd;
-	uint32_t nodeId;
-	Sockaddr groupAddr;
-	uint32_t msgSeqNum;
-	unsigned int group;
-
-	NetworkInstance(int packetLoss, uint32_t nodeId, unsigned int group);
-
-	uint32_t getMsgSeqNum();
-	bool isMessageSentByMe(char *buf);
-	void rfs_netInit(unsigned short port);
-	ssize_t rfs_sendTo(char *buf, int length);
-	bool rfs_recvData(int pollTimeout);
-	ssize_t rfs_recvFrom(char* buf, int length);
-
-	void dropOrSendMessage(Message *msg, char *buf, int len);
-};
-
 class Message {
 public:
 	unsigned char msgType;
@@ -250,6 +229,27 @@ public:
 		Message::print();
 		printf("FileDesc: %d\n", fileDesc);
 	}
+};
+
+class NetworkInstance {
+public:
+	int packetLoss;
+	int sockfd;
+	uint32_t nodeId;
+	Sockaddr groupAddr;
+	uint32_t msgSeqNum;
+	unsigned int group;
+
+	NetworkInstance(int packetLoss, uint32_t nodeId, unsigned int group);
+
+	uint32_t getMsgSeqNum();
+	bool isMessageSentByMe(char *buf);
+	void rfs_netInit(unsigned short port);
+	ssize_t rfs_sendTo(char *buf, int length);
+	bool rfs_recvData(int pollTimeout);
+	ssize_t rfs_recvFrom(char* buf, int length);
+
+	void dropOrSendMessage(Message *msg, char *buf, int len);
 };
 
 void RFSError(char *s);
