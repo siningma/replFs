@@ -15,7 +15,7 @@
 class ServerInstance: public NetworkInstance {
 public:
 	char *filePath;
-	File *pf;
+	FILE *pf;
 
 	ServerInstance(int packetLoss, uint32_t nodeId, char* filePath, unsigned int group);
 
