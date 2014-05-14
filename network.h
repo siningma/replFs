@@ -66,6 +66,7 @@ public:
 	NetworkInstance(int packetLoss, uint32_t nodeId);
 
 	uint32_t getMsgSeqNum();
+	bool isMySentMessage();
 	void rfs_netInit(unsigned short port);
 	ssize_t rfs_sendTo(char *buf, int length);
 	bool rfs_recvData(int pollTimeout);

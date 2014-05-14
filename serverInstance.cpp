@@ -68,6 +68,9 @@ int ServerInstance:: procInitMessage(char *buf) {
 	InitMessage initMessage;
 	initMessage.deserialize(buf);
 
+	if (isMySentMessage(initMessage.nodeId))
+		return 0;
+
 	printf("Recv Message: ");
 	initMessage.print();
 

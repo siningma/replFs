@@ -32,6 +32,9 @@ int ClientInstance:: procInitAckMessage(char *buf) {
 	InitAckMessage initAckMessage;
 	initAckMessage.deserialize(buf);
 
+	if (isMySentMessage(initAckMessage.nodeId))
+		return 0;
+
 	printf("Recv Message: ");
 	initAckMessage.print();
 

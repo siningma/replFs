@@ -137,3 +137,7 @@ uint32_t NetworkInstance:: getMsgSeqNum() {
 		return msgSeqNum++;
 	}
 }
+
+bool NetworkInstance:: isMySentMessage(uint32_t id) {
+	return this->nodeId == id;
+}
