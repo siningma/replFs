@@ -109,7 +109,7 @@ public:
 	}
 
 	virtual void print() {
-		printf("MsgType: 0x%02x, NodeId: %010u, seqNum: %u\n", this->msgType, this->nodeId, this->seqNum);
+		printf("MsgType: 0x%02x, NodeId: %010u, seqNum: %u", this->msgType, this->nodeId, this->seqNum);
 	}
 };
 
@@ -120,7 +120,7 @@ public:
 	
 	void serialize(char *buf) { Message::serialize(buf); }
 	void deserialize(char *buf) { Message::deserialize(buf); }
-	void print() { Message::print(); }
+	void print() { Message::print(); printf("\n"); }
 };
 
 class InitAckMessage: public Message {
@@ -130,8 +130,69 @@ public:
 
 	void serialize(char *buf) { Message::serialize(buf); }
 	void deserialize(char *buf) { Message::deserialize(buf); }
-	void print() { Message::print(); }
+	void print() { Message::print(); printf("\n"); }
 };
+
+class OpenFileMessage: public Message {
+public:
+	uint32_t fileId;
+	char filename[128];
+
+	OpenFileMessage() {}
+	OpenFileMessage(uint32_t nodeId, uint32_t seqNum, uint32_t fileId, char* filename): Message(OPENFILE, nodeId, seqNum) {
+		this->fileId = fileId;
+		memset(this->filename, 0, 128);
+		memcpy(this->filename, filename, strlen(filename));
+	}
+
+	void serialize(char *buf) {
+		Message::serialize(buf);
+		uint32_t msg_fileId = htonl(fileId);
+		memcpy(buf + HEADER_SIZE, &msg_fileId, 4);
+		memcpy(buf + HEADER_SIZE + 4, filename, strlen(filename));
+	}
+
+	void deserialize(char *buf) { 
+		Message::deserialize(buf);
+		uint32_t msg_fileId = 0;
+		memcpy(&msg_fileId, buf + 2, 4);
+		this->fileId = ntohl(msg_fileId);
+		memcpy(filename, buf + HEADER_SIZE + 4, 128);
+	}
+
+	void print() { 
+		Message::print();
+		printf("FileId: %u, Filename: %s\n", fileId, filename);
+	}
+};
+
+class OpenFileAckMessage: public Message() {
+public:
+	int fileDesc;
+
+	OpenFileAckMessage() {}
+	OpenFileAckMessage(uint32_t nodeId, uint32_t seqNum, int fileDesc): Message(OPENFILEACK, nodeId, seqNum) {
+		this->fileDesc = fileDesc;
+	}
+
+	void serialize(char *buf) {
+		Message::serialize(buf);
+		int msg_fileDesc = htonl(fileDesc);
+		memcpy(buf + HEADER_SIZE, &msg_fileDesc, 4);
+	}
+
+	void deserialize(char *buf) { 
+		Message::deserialize(buf);
+		int msg_fileDesc = 0;
+		memcpy(&msg_fileDesc, buf + 2, 4);
+		this->fileDesc = ntohl(msg_fileDesc);
+	}
+
+	void print() { 
+		Message::print();
+		printf("FileDesc: %d\n", fileDesc);
+	}
+}
 
 void RFSError(char *s);
 void getCurrentTime(struct timeval *tv);

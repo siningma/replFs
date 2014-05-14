@@ -15,12 +15,15 @@
 class ServerInstance: public NetworkInstance {
 public:
 	char *filePath;
+	File *pf;
 
 	ServerInstance(int packetLoss, uint32_t nodeId, char* filePath, unsigned int group);
 
 	void execute();
 	void sendInitAckMessage();
 	int procInitMessage(char *buf);
+	void sendOpenFileAckMessage(int fileDesc);
+	int procOpenFileMessage(char *buf);
 };
 
 #endif

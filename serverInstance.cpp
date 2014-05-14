@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
 
 	int err = mkdir(filePath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	if (err == -1) {
-		if (errno == ENOENT) {
+		if (errno == EEXIST) {
 			RFSError("machine already in use");
 		} else {
 			RFSError("create filepath directory error");
@@ -72,6 +72,10 @@ void ServerInstance:: execute() {
 						procInitMessage(buf);
 						break;
 					}
+					case OPEN:
+					{
+						procOpenMessage(buf);
+					}
 					default:
 					break;
 				}
@@ -107,3 +111,39 @@ int ServerInstance:: procInitMessage(char *buf) {
 	sendInitAckMessage();
 	return 0;
 }
+
+void ServerInstance:: sendOpenFileAckMessage(int fileDesc) {
+	OpenFileAckMessage openFileAckMessage(this->nodeId, getMsgSeqNum(), fileDesc);
+
+	char buf[HEADER_SIZE];
+	memset(buf, 0, HEADER_SIZE);
+	openFileAckMessage.serialize(buf);
+
+	if (isDropPacket(packetLoss)) {
+		printf("Drop Message: ");
+		openFileAckMessage.print();
+	} else {
+		printf("Send Message: ");
+		openFileAckMessage.print();
+		rfs_sendTo(buf, HEADER_SIZE + 4);
+	}
+}
+
+int ServerInstance:: procOpenFileMessage(char *buf) {
+	OpenFileMessage openFileMessage;
+	openFileMessage.deserialize(buf);
+
+	printf("Recv Message: ");
+	openFileMessage.print();
+
+	char *fileFullname = strcat(this->filePath, openFileMessage.filename);
+	pf = fopen(fileFullname, "r+b");
+	if (!pf) {
+		sendOpenFileAckMessage(-1);
+		return -1;
+	} else {
+		sendOpenFileAckMessage(0);
+		return 0;
+	}
+}
+
