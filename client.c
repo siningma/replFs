@@ -28,8 +28,6 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
         portNum, packetLoss, numServers );
 #endif
 
-    printf("max: %u\n", (uint32_t)~0);
-
     /****************************************************/
     /* Initialize network access, local state, etc.     */
     /****************************************************/
