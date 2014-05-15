@@ -51,6 +51,7 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
         getCurrentTime(&now);
         if (isTimeOut(&now, &last, SEND_MSG_INTERVAL)) {
             client->sendInitMessage();
+            usleep(50000);
             getCurrentTime(&last);
         }
 

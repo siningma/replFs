@@ -139,11 +139,9 @@ bool NetworkInstance:: rfs_recvData() {
 ssize_t NetworkInstance:: rfs_recvFrom(char* buf, int length) {
 	socklen_t fromLen = sizeof(Sockaddr);
 
-	printf("Before recvfrom\n");
 	ssize_t cc = recvfrom(this->sockfd, buf, length, 0, 
 		(struct sockaddr *)&this->groupAddr, &fromLen);
 	
-	printf("After recvfrom\n");
 	if (cc < 0 && errno != EINTR)
 		perror("event recvfrom");
 
