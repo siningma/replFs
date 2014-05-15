@@ -63,7 +63,7 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
             memset(buf, 0, HEADER_SIZE);
 
             if (client->rfs_IsRecvPacket()) {
-                int status = client->rfs_recvFrom(buf, HEADER_SIZE);
+                int status = client->rfs_RecvFrom(buf, HEADER_SIZE);
                 if (client->isMessageSentByMe(buf))
                     continue;
 
