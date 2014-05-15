@@ -29,6 +29,14 @@ bool isDropPacket(int packetLoss) {
 	return prob < packetLoss;
 }
 
+uint32_t getNextNum(uint32_t num) {
+	if (num == (uint32_t)~0) {
+		return 0;
+	} else {
+		return ++num;
+	}
+}
+
 NetworkInstance:: NetworkInstance(int packetLoss, uint32_t nodeId) {
 	this->packetLoss = packetLoss;
 	this->nodeId = nodeId;
@@ -96,8 +104,6 @@ ssize_t NetworkInstance:: rfs_SendTo(char *buf, int length) {
 
 	if (cc < 0) {
 		perror("sendto()");
-	} else {
-		// printf("Send message len: %d\n", (int)cc);
 	}
 	return cc;
 }
@@ -139,28 +145,14 @@ ssize_t NetworkInstance:: rfs_RecvFrom(char* buf, int length) {
 	return cc;
 }
 
-void NetworkInstance:: dropOrSendMessage(Message *msg, int len) {
-	if (isDropPacket(packetLoss)) {
-		printf("Drop Message: ");
-		msg->print();
-	} else {	
-		char buf[len];
-		memset(buf, 0, len);
-		msg->serialize(buf);
+void NetworkInstance:: sendMessage(Message *msg, int len) {
+	char buf[len];
+	memset(buf, 0, len);
+	msg->serialize(buf);
 
-		rfs_SendTo(buf, len);
-		printf("Send Message: ");
-		msg->print();
-	}
-}
-
-uint32_t NetworkInstance:: getMsgSeqNum() {
-	if (msgSeqNum == (uint32_t)~0) {
-		msgSeqNum = 0;
-		return (uint32_t)~0;
-	} else {
-		return msgSeqNum++;
-	}
+	ssize_t cc = rfs_SendTo(buf, len);
+	printf("Send Message size: %d, ", (int)cc);
+	msg->print();
 }
 
 bool NetworkInstance:: isMessageSentByMe(char *buf) {

@@ -222,23 +222,23 @@ File Id in the client side is a monotonically increasing number starting from 0.
 	\item The client sends Commit or Abort message to servers. This steps completes this transaction or rollback. The client waits CommitAck or AbortAck message.
 	\item On Abort(), the client sends abort message to servers. Waits for servers AbortAck messages.
 	\item The client receives CommitAck or AbortAck message. The client returns error if file descriptor is -1 or timeout.
-	\item  On Close(), the client sends close message to close the file. The client returns error if file descriptor is -1 or timeout.
+	\item  On Close(), the client sends close message to close the file. The client returns error if file descriptor is -1 or not sufficient server CloseAck message is received in timeout time.
 \end{itemize}
 
 \subsection{Protocol Timing}
 \subsubsection{InitReplFs}
-The client sends Init messages to servers every 200ms, init phase timeout is 2s. The client only accepts servers InitAck message in init phase timeout.
+The client sends Init messages to servers every 200ms, and client waits for 2s. The client only accepts servers InitAck message in init phase timeout. 
 
 \subsubsection{OpenFile}
-The client sends OpenFile messages to servers every 200ms, OpenFile phase timeout is 4s. The client returns -1 if OpenFileAck timeout and not sufficient server OpenFileAck message is received.
+The client sends OpenFile messages to servers every 200ms. OpenFile phase timeout is 4s. The client returns -1 if not sufficient server OpenFileAck messages are received in this 4s timeout time.
 
 \subsubsection{Vote}
-The client sends Vote messages to servers every 200ms, Vote phase timeout is 4s. If any server has no response in 4s, the client treats this case as replies VoteAck message with -1 file description. The client sends abort message.
+The client sends Vote messages to servers every 200ms, and Vote phase timeout is 4s. If any server has no response in 4s, the client treats this case as replies VoteAck message with -1 file description. The client sends abort message.
 
 \subsubsection{Commit and Abort}
 The client sends Commit or Abort messages to servers every 200ms, this Commit or Abort timeout is 4s. If any server has no response in 4s, the client returns error but servers keep the commit that has already happened. On the server side, if any server cannot receive any commit and abort message in commit or abort phase for 4 seconds, the server rollbacks file updates automatically.
  
  \subsubsection{Close}
-The client sends Close messages to servers every 200ms, Close phase timeout is 2s. 
+The client sends Close messages to servers every 200ms, and Close phase timeout is 2s. The client returns -1 if not sufficient server CloseAck messages are received.
  
 \end{document}

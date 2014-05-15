@@ -28,6 +28,7 @@
 #include <string.h>
 #include <assert.h>
 #include <vector>
+#include <set>
 #include <map>
 
 #ifndef	TRUE
@@ -305,7 +306,6 @@ public:
 
 	NetworkInstance(int packetLoss, uint32_t nodeId);
 
-	uint32_t getMsgSeqNum();
 	bool isMessageSentByMe(char *buf);
 	void rfs_NetInit(unsigned short port);
 
@@ -313,7 +313,7 @@ public:
 	bool rfs_IsRecvPacket();
 	ssize_t rfs_RecvFrom(char* buf, int length);
 
-	void dropOrSendMessage(Message *msg, int len);
+	void sendMessage(Message *msg, int len);
 };
 
 typedef struct _Update {
@@ -326,5 +326,6 @@ void RFSError(const char *s);
 void getCurrentTime(struct timeval *tv);
 bool isTimeOut(struct timeval *curr, struct timeval *last, uint32_t millisecond);
 bool isDropPacket(int packetLoss);
+uint32_t getNextNum(uint32_t num);
 
 #endif

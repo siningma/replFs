@@ -90,9 +90,10 @@ void ServerInstance:: execute() {
 }
 
 void ServerInstance:: sendInitAckMessage() {
-	InitAckMessage initAckMsg(nodeId, getMsgSeqNum());
+	InitAckMessage initAckMsg(nodeId, msgSeqNum);
+	msgSeqNum = getNextNum(msgSeqNum);
 
-	dropOrSendMessage(&initAckMsg, HEADER_SIZE);
+	sendMessage(&initAckMsg, HEADER_SIZE);
 }
 
 void ServerInstance:: procInitMessage(char *buf) {
@@ -105,9 +106,10 @@ void ServerInstance:: procInitMessage(char *buf) {
 }
 
 void ServerInstance:: sendOpenFileAckMessage(int fileDesc) {
-	OpenFileAckMessage openFileAckMessage(nodeId, getMsgSeqNum(), fileDesc);
+	OpenFileAckMessage openFileAckMessage(nodeId, msgSeqNum, fileDesc);
+	msgSeqNum = getNextNum(msgSeqNum);
 
-	dropOrSendMessage(&openFileAckMessage, HEADER_SIZE);
+	sendMessage(&openFileAckMessage, HEADER_SIZE);
 }
 
 void ServerInstance:: procOpenFileMessage(char *buf) {
@@ -127,13 +129,14 @@ void ServerInstance:: procOpenFileMessage(char *buf) {
 }
 
 void ServerInstance:: procWriteBlockMessage(char *buf) {
-	
+
 }
 
 void ServerInstance:: sendCloseAckMessage(int fileDesc) {
-	CloseAckMessage closeAckMessage(nodeId, getMsgSeqNum(), fileDesc);
+	CloseAckMessage closeAckMessage(nodeId, msgSeqNum, fileDesc);
+	msgSeqNum = getNextNum(msgSeqNum);
 
-	dropOrSendMessage(&closeAckMessage, HEADER_SIZE);
+	sendMessage(&closeAckMessage, HEADER_SIZE);
 }
 
 void ServerInstance:: procCloseMessage(char *buf) {
