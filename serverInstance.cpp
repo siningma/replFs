@@ -31,7 +31,6 @@ int main(int argc, char *argv[]) {
 	}
 
 	server->rfs_NetInit(port);
-	printf("Server sockfd: %d\n", server->sockfd);
 
 	server->execute();
 	
@@ -52,7 +51,6 @@ void ServerInstance:: execute() {
 			char buf[MAXBUFSIZE];
 			memset(buf, 0, MAXBUFSIZE);
 
-			printf("Server receives data\n");
 			ssize_t status = rfs_RecvFrom(buf, sizeof(buf));
 			
 			printf("Server recv message size: %d\n", (int)status);
