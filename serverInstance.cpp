@@ -47,9 +47,8 @@ ServerInstance:: ServerInstance(int packetLoss, uint32_t nodeId, char* filePath)
 }
 
 void ServerInstance:: execute() {
-
 	while(1) {
-		if (rfs_recvData()) {	// server is blocking IO
+		if (rfs_IsRecvPacket()) {
 			char buf[BUF_SIZE];
 			memset(buf, 0, BUF_SIZE);
 

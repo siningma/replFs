@@ -33,7 +33,7 @@ NetworkInstance:: NetworkInstance(int packetLoss, uint32_t nodeId) {
 	memset(&this->groupAddr, 0, sizeof(Sockaddr));
 }
 
-void NetworkInstance:: rfs_netInit(unsigned short port) {
+void NetworkInstance:: rfs_NetInit(unsigned short port) {
 	Sockaddr		nullAddr;
 	int				reuse;
 	u_char          ttl;
@@ -87,36 +87,14 @@ void NetworkInstance:: rfs_netInit(unsigned short port) {
 	this->groupAddr.sin_addr.s_addr = htonl(RFS_GROUP);
 }
 
-ssize_t NetworkInstance:: rfs_sendTo(char *buf, int length) {
+ssize_t NetworkInstance:: rfs_SendTo(char *buf, int length) {
 	ssize_t cc = sendto(this->sockfd, buf, length, 0, 
 		(struct sockaddr *)&this->groupAddr, sizeof(Sockaddr));
 
 	return cc;
 }
 
-bool NetworkInstance:: rfs_recvData() {
-    // struct pollfd udp;
-    // memset(&udp, 0, sizeof(struct pollfd));
-
-    // udp.fd = this->sockfd;
-    // udp.events = POLLIN;
-
-    // int ret = poll(&udp, 1, pollTimeout);
-
-    // if (ret < 0) {
-    //     RFSError("poll error"); 
-    //     return false;  
-    // } else {
-    //     if (udp.revents & POLLIN) {
-    //     	printf("has data\n");
-    //     	return true;
-    //     }
-    //     else {
-    //     	printf("no data\n");
-    //     	return false;
-    //     }
-    // }
-
+bool NetworkInstance:: rfs_IsRecvPacket() {
     fd_set	fdmask;
     struct timeval timeout;
 	FD_ZERO(&fdmask);
@@ -129,14 +107,10 @@ bool NetworkInstance:: rfs_recvData() {
 	    if (errno != EINTR)
 	    	RFSError("select error on events");
 
-	if (FD_ISSET(sockfd, &fdmask) == TRUE) {
-		return true;
-	} else {
-		return false;
-	}
+	return FD_ISSET(sockfd, &fdmask);
 }
 
-ssize_t NetworkInstance:: rfs_recvFrom(char* buf, int length) {
+ssize_t NetworkInstance:: rfs_RecvFrom(char* buf, int length) {
 	socklen_t fromLen = sizeof(Sockaddr);
 
 	ssize_t cc = recvfrom(this->sockfd, buf, length, 0, 
@@ -155,7 +129,7 @@ void NetworkInstance:: dropOrSendMessage(Message *msg, char *buf, int len) {
 	} else {
 		printf("Send Message: ");
 		msg->print();
-		rfs_sendTo(buf, len);
+		rfs_SendTo(buf, len);
 	}
 }
 

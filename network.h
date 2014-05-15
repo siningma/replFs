@@ -243,11 +243,11 @@ public:
 
 	uint32_t getMsgSeqNum();
 	bool isMessageSentByMe(char *buf);
-	void rfs_netInit(unsigned short port);
+	void rfs_NetInit(unsigned short port);
 
-	ssize_t rfs_sendTo(char *buf, int length);
-	bool rfs_recvData();
-	ssize_t rfs_recvFrom(char* buf, int length);
+	ssize_t rfs_SendTo(char *buf, int length);
+	bool rfs_IsRecvPacket();
+	ssize_t rfs_RecvFrom(char* buf, int length);
 
 	void dropOrSendMessage(Message *msg, char *buf, int len);
 };
