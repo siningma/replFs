@@ -129,7 +129,13 @@ bool NetworkInstance:: rfs_recvData() {
 	    if (errno != EINTR)
 	    	RFSError("select error on events");
 
-	return FD_ISSET(sockfd, &fdmask);
+	if (FD_ISSET(sockfd, &fdmask) == TRUE) {
+		printf("Server socket set\n");
+		return true;
+	} else {
+		printf("Server socket notset\n");
+		return false;
+	}
 }
 
 ssize_t NetworkInstance:: rfs_recvFrom(char* buf, int length) {
