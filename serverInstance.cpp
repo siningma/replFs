@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	server->rfs_netInit(port);
+	server->rfs_NetInit(port);
 	printf("Server sockfd: %d\n", server->sockfd);
 
 	server->execute();
