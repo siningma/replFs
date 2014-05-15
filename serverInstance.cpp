@@ -53,7 +53,7 @@ void ServerInstance:: execute() {
 			memset(buf, 0, BUF_SIZE);
 
 			printf("Server receives data\n");
-			ssize_t status = rfs_recvFrom(buf, sizeof(buf));
+			ssize_t status = rfs_RecvFrom(buf, sizeof(buf));
 			
 			printf("Server recv message size: %d\n", (int)status);
 			if (isMessageSentByMe(buf))
