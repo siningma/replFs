@@ -111,7 +111,8 @@ bool NetworkInstance:: rfs_IsRecvPacket(bool nodeType) {
 		return false;
 	}
 	else if (!ret) {
-		printf("No Data receive in 5 seconds\n");
+		if (nodeType)
+			printf("No Data receive in 5 seconds\n");
 		return false;
 	} else {
 		return FD_ISSET(sockfd, &fdmask);
