@@ -26,10 +26,9 @@ bool isDropPacket(int packetLoss) {
 	return ((unsigned int)rand() % 100) < packetLoss;
 }
 
-NetworkInstance:: NetworkInstance(int packetLoss, uint32_t nodeId, unsigned int group) {
+NetworkInstance:: NetworkInstance(int packetLoss, uint32_t nodeId) {
 	this->packetLoss = packetLoss;
 	this->nodeId = nodeId;
-	this->group = group;
 	this->msgSeqNum = 0;
 	memset(&this->groupAddr, 0, sizeof(Sockaddr));
 }
