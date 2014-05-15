@@ -130,10 +130,8 @@ bool NetworkInstance:: rfs_recvData() {
 	    	RFSError("select error on events");
 
 	if (FD_ISSET(sockfd, &fdmask) == TRUE) {
-		printf("Server socket set\n");
 		return true;
 	} else {
-		printf("Server socket notset\n");
 		return false;
 	}
 }
