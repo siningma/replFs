@@ -62,7 +62,7 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
 
             if (client->rfs_IsRecvPacket(FALSE)) {
                 int status = client->rfs_RecvFrom(buf, HEADER_SIZE);
-                printf("Client recv message size: %d ", (int)status);
+                printf("Client recv message size: %d, ", (int)status);
 
                 if (client->isMessageSentByMe(buf))
                     continue;
