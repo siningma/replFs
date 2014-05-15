@@ -49,8 +49,8 @@ ServerInstance:: ServerInstance(int packetLoss, uint32_t nodeId, char* filePath)
 void ServerInstance:: execute() {
 	while(1) {
 		if (rfs_IsRecvPacket()) {
-			char buf[BUF_SIZE];
-			memset(buf, 0, BUF_SIZE);
+			char buf[MAXBUFSIZE];
+			memset(buf, 0, MAXBUFSIZE);
 
 			printf("Server receives data\n");
 			ssize_t status = rfs_RecvFrom(buf, sizeof(buf));

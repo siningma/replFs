@@ -10,7 +10,7 @@
 
 #include "network.h"
 
-#define BUF_SIZE 1024
+#define MAXBUFSIZE 2048
 
 class ServerInstance: public NetworkInstance {
 public:
