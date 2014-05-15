@@ -23,9 +23,8 @@ bool isTimeOut(struct timeval *curr, struct timeval *last, uint32_t millisecond)
 }
 
 bool isDropPacket(int packetLoss) {
-	srand(time(NULL));
 	int prob = rand() % 100;
-	printf("drop prob: %d\n", prob);
+	// printf("drop prob: %d\n", prob);
 
 	return prob < packetLoss;
 }
@@ -98,7 +97,7 @@ ssize_t NetworkInstance:: rfs_SendTo(char *buf, int length) {
 	if (cc < 0) {
 		perror("sendto()");
 	} else {
-		printf("Send message len: %d\n", (int)cc);
+		// printf("Send message len: %d\n", (int)cc);
 	}
 	return cc;
 }
