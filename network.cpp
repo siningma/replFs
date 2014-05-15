@@ -125,13 +125,9 @@ bool NetworkInstance:: rfs_recvData() {
 	timeout.tv_usec = 0;
 	int ret = 0;
 
-	printf("before select\n");
-
 	while ((ret = select(32, &fdmask, NULL, NULL, &timeout)) == -1)
 	    if (errno != EINTR)
 	    	RFSError("select error on events");
-
-	printf("after select\n");
 
 	return FD_ISSET(sockfd, &fdmask);
 }

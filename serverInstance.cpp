@@ -53,7 +53,7 @@ void ServerInstance:: execute() {
 			char buf[BUF_SIZE];
 			memset(buf, 0, BUF_SIZE);
 
-			printf("Receive Data\n");
+			printf("Server receives data\n");
 			ssize_t status = rfs_recvFrom(buf, BUF_SIZE);
 			
 			printf("Server recv message size: %d\n", (int)status);
@@ -81,6 +81,8 @@ void ServerInstance:: execute() {
 					break;
 				}
 			}
+		} else {
+			printf("Server receives no data\n");
 		}
 	}
 }
