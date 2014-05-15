@@ -83,8 +83,8 @@ void NetworkInstance:: rfs_NetInit(unsigned short port) {
 
 	/* Get the multi-cast address ready to use in SendData()
            calls. */
-	memcpy(&this->groupAddr, &nullAddr, sizeof(Sockaddr));
-	this->groupAddr.sin_addr.s_addr = htonl(RFS_GROUP);
+	memcpy(&groupAddr, &nullAddr, sizeof(Sockaddr));
+	groupAddr.sin_addr.s_addr = htonl(RFS_GROUP);
 }
 
 ssize_t NetworkInstance:: rfs_SendTo(char *buf, int length) {
@@ -165,5 +165,5 @@ uint32_t NetworkInstance:: getMsgSeqNum() {
 bool NetworkInstance:: isMessageSentByMe(char *buf) {
 	uint32_t msg_nodeId = 0;
 	memcpy(&msg_nodeId, buf + 2, 4);
-	return this->nodeId == ntohl(msg_nodeId);
+	return nodeId == ntohl(msg_nodeId);
 }

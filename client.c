@@ -55,7 +55,7 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
         }
 
         getCurrentTime(&now);
-        if (isTimeOut(&now, &first, 2000)) {
+        if (isTimeOut(&now, &first, 4000)) {
               break;
         } else {
             char buf[HEADER_SIZE];

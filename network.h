@@ -79,18 +79,18 @@ public:
 	}
 
 	virtual void deserialize(char *buf) {
-		this->msgType = buf[0];
-		this->reserved = 0;
+		msgType = buf[0];
+		reserved = 0;
 		uint32_t msg_nodeId = 0;
 		memcpy(&msg_nodeId, buf + 2, 4);
-		this->nodeId = ntohl(msg_nodeId);
+		nodeId = ntohl(msg_nodeId);
 		uint32_t msg_seqNum = 0;
 		memcpy(&msg_seqNum, buf + 6, 4);
-		this->seqNum = ntohl(msg_seqNum);
+		seqNum = ntohl(msg_seqNum);
 	}
 
 	virtual void print() {
-		printf("MsgType: 0x%02x, NodeId: %010u, seqNum: %u", this->msgType, this->nodeId, this->seqNum);
+		printf("MsgType: 0x%02x, NodeId: %010u, seqNum: %u", msgType, nodeId, seqNum);
 	}
 };
 
@@ -137,7 +137,7 @@ public:
 		Message::deserialize(buf);
 		uint32_t msg_fileId = 0;
 		memcpy(&msg_fileId, buf + 2, 4);
-		this->fileId = ntohl(msg_fileId);
+		fileId = ntohl(msg_fileId);
 		memcpy(filename, buf + HEADER_SIZE + 4, 128);
 	}
 
@@ -166,7 +166,7 @@ public:
 		Message::deserialize(buf);
 		int msg_fileDesc = 0;
 		memcpy(&msg_fileDesc, buf + 2, 4);
-		this->fileDesc = ntohl(msg_fileDesc);
+		fileDesc = ntohl(msg_fileDesc);
 	}
 
 	void print() { 
@@ -194,7 +194,7 @@ public:
 		Message::deserialize(buf);
 		uint32_t msg_fileId = 0;
 		memcpy(&msg_fileId, buf + 2, 4);
-		this->fileId = ntohl(msg_fileId);
+		fileId = ntohl(msg_fileId);
 	}
 
 	void print() { 
@@ -222,7 +222,7 @@ public:
 		Message::deserialize(buf);
 		int msg_fileDesc = 0;
 		memcpy(&msg_fileDesc, buf + 2, 4);
-		this->fileDesc = ntohl(msg_fileDesc);
+		fileDesc = ntohl(msg_fileDesc);
 	}
 
 	void print() { 

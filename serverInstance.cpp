@@ -40,7 +40,6 @@ int main(int argc, char *argv[]) {
 
 ServerInstance:: ServerInstance(int packetLoss, uint32_t nodeId, char* filePath): NetworkInstance(packetLoss, nodeId) {
 	int len = strlen(filePath) + 1;
-
 	this->filePath = new char[len];
 	memset(this->filePath, 0, len);
 	memcpy(this->filePath, filePath, len);
@@ -86,7 +85,7 @@ void ServerInstance:: execute() {
 }
 
 void ServerInstance:: sendInitAckMessage() {
-	InitAckMessage initAckMsg(this->nodeId, getMsgSeqNum());
+	InitAckMessage initAckMsg(nodeId, getMsgSeqNum());
 
 	dropOrSendMessage(&initAckMsg, HEADER_SIZE);
 }
@@ -103,7 +102,7 @@ int ServerInstance:: procInitMessage(char *buf) {
 }
 
 void ServerInstance:: sendOpenFileAckMessage(int fileDesc) {
-	OpenFileAckMessage openFileAckMessage(this->nodeId, getMsgSeqNum(), fileDesc);
+	OpenFileAckMessage openFileAckMessage(nodeId, getMsgSeqNum(), fileDesc);
 
 	dropOrSendMessage(&openFileAckMessage, HEADER_SIZE);
 }
@@ -115,7 +114,7 @@ int ServerInstance:: procOpenFileMessage(char *buf) {
 	printf("Recv Message: ");
 	openFileMessage.print();
 
-	char *fileFullname = strcat(this->filePath, openFileMessage.filename);
+	char *fileFullname = strcat(filePath, openFileMessage.filename);
 	pf = fopen(fileFullname, "r+b");
 	if (!pf) {
 		sendOpenFileAckMessage(-1);
