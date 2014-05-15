@@ -17,7 +17,7 @@ public:
 	char *filePath;
 	FILE *pf;
 
-	ServerInstance(int packetLoss, uint32_t nodeId, char* filePath, unsigned int group);
+	ServerInstance(int packetLoss, uint32_t nodeId, char* filePath);
 
 	void execute();
 	void sendInitAckMessage();
