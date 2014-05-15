@@ -126,6 +126,10 @@ void ServerInstance:: procOpenFileMessage(char *buf) {
 	}
 }
 
+void ServerInstance:: procWriteBlockMessage(char *buf) {
+	
+}
+
 void ServerInstance:: sendCloseAckMessage(int fileDesc) {
 	CloseAckMessage closeAckMessage(nodeId, getMsgSeqNum(), fileDesc);
 

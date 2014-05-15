@@ -53,7 +53,7 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
             getCurrentTime(&last);
         }
 
-        if (isTimeOut(&now, &first, 3000)) {
+        if (isTimeOut(&now, &first, SHORT_TIMEOUT)) {
               break;
         } else {
             char buf[HEADER_SIZE];
@@ -128,6 +128,7 @@ WriteBlock( int fd, char * buffer, int byteOffset, int blockSize ) {
     printf( "WriteBlock: Writing FD=%d, Offset=%d, Length=%d\n",
   	fd, byteOffset, blockSize );
 #endif
+    client->sendWriteBlockMessage(fd, client->getUpdateId(), byteOffset, blockSize, buffer);
 
     if ( lseek( fd, byteOffset, SEEK_SET ) < 0 ) {
         perror( "WriteBlock Seek" );
@@ -211,7 +212,7 @@ CloseFile( int fd ) {
             getCurrentTime(&last);
         }
 
-        if (isTimeOut(&now, &first, THREE_TIMEOUT)) {
+        if (isTimeOut(&now, &first, SHORT_TIMEOUT)) {
               break;
         } else {
             char buf[HEADER_SIZE];

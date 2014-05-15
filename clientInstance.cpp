@@ -10,6 +10,7 @@
 ClientInstance:: ClientInstance(int packetLoss, uint32_t nodeId, int numServers): NetworkInstance(packetLoss, nodeId) {
 	this->numServers = numServers;
 	this->nodeType = CLIENT_NODE;
+	this->updateId = 0;
 }
 
 void ClientInstance:: sendInitMessage() {
@@ -54,6 +55,17 @@ int ClientInstance:: procOpenFileAckMessage(char *buf) {
 		return openFileAckMessage.fileDesc;
 }
 
+void ClientInstance:: sendWriteBlockMessage(int fileId, uint32_t updateId, int byteOffset, int blockSize, char *buffer) {
+	WriteBlockMessage writeBlockMsg(nodeId, getMsgSeqNum(), fileId, updateId, byteOffset, blockSize, buffer);
+
+	Update update;
+	update.byteOffset = byteOffset;
+	update.blockSize = blockSize;
+	update.buffer = buffer;
+	updateMap.insert(std::make_pair(updateId, update));
+	dropOrSendMessage(&writeBlockMsg, HEADER_SIZE + 16 + blockSize);
+}
+
 void ClientInstance:: sendCloseMessage(int fileId) {
 	CloseMessage closeMsg(nodeId, getMsgSeqNum(), fileId);
 	
@@ -67,4 +79,13 @@ int ClientInstance:: procCloseAckMessage(char *buf) {
 	closeAckMessage.print();
 
 	return closeAckMessage.fileDesc;
+}
+
+uint32_t ClientInstance:: getUpdateId() {
+	if (updateId == (uint32_t)~0) {
+		updateId = 0;
+		return (uint32_t)~0;
+	} else {
+		return updateId++;
+	}
 }

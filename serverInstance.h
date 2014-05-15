@@ -22,8 +22,11 @@ public:
 	void execute();
 	void sendInitAckMessage();
 	void procInitMessage(char *buf);
+
 	void sendOpenFileAckMessage(int fileDesc);
 	void procOpenFileMessage(char *buf);
+
+	void procWriteBlockMessage(char *buf);
 
 	void sendCloseAckMessage(int fileDesc);
 	void procCloseMessage(char *buf);

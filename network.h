@@ -53,8 +53,8 @@
 
 #define HEADER_SIZE 	10	
 #define SEND_MSG_INTERVAL 	200
-#define THREE_TIMEOUT 	3000
-#define FOUR_TIMEOUT 	4000
+#define SHORT_TIMEOUT 	2000
+#define LONG_TIMEOUT 	4000
 
 #define CLIENT_NODE 	0
 #define SERVER_NODE 	1
@@ -315,6 +315,12 @@ public:
 
 	void dropOrSendMessage(Message *msg, int len);
 };
+
+typedef struct _Update {
+	int byteOffset;
+	int blockSize;
+	char *buffer;
+} Update;
 
 void RFSError(const char *s);
 void getCurrentTime(struct timeval *tv);
