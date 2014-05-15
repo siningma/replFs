@@ -71,7 +71,7 @@ void ClientInstance:: sendWriteBlockMessage(int fileId, uint32_t updateId, int b
 	Update update;
 	update.byteOffset = byteOffset;
 	update.blockSize = blockSize;
-	update.buffer = buffer;
+	memcpy(update.buffer, buffer, blockSize);
 	updateMap.insert(std::make_pair(updateId, update));
 	sendMessage(&writeBlockMsg, HEADER_SIZE + 16 + blockSize);
 }

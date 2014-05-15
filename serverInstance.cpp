@@ -43,6 +43,8 @@ ServerInstance:: ServerInstance(int packetLoss, uint32_t nodeId, char* filePath)
 	memset(this->filePath, 0, len);
 	memcpy(this->filePath, filePath, len);
 	this->nodeType = SERVER_NODE;
+	this->isFileOpen = false;
+	this->latestValidUpdateId = 0;
 }
 
 void ServerInstance:: execute() {
@@ -118,18 +120,44 @@ void ServerInstance:: procOpenFileMessage(char *buf) {
 
 	openFileMessage.print();
 
+	if (isFileOpen) {
+		sendOpenFileAckMessage(0);
+		return;
+	}
+
 	char *fileFullname = strcat(filePath, openFileMessage.filename);
-	FILE *pf = fopen(fileFullname, "r+b");
-	if (!pf) {
+	fp = fopen(fileFullname, "r+b");
+	if (!fp) {
+		isFileOpen = false;
 		sendOpenFileAckMessage(-1);
 	} else {
-		fileId_map.insert(std::make_pair(openFileMessage.fileId, pf));
+		isFileOpen = true;
 		sendOpenFileAckMessage(0);
 	}
 }
 
 void ServerInstance:: procWriteBlockMessage(char *buf) {
+	WriteBlockMessage writeBlockMessage;
+	writeBlockMessage.deserialize(buf);
 
+	writeBlockMessage.print();
+	std::map<uint32_t, Update>::iterator it = updateMap.find(writeBlockMessage.updateId);
+	if (it == updateMap.end()) {
+		Update update;
+		update.byteOffset = writeBlockMessage.byteOffset;
+		update.blockSize = writeBlockMessage.blockSize;
+		memcpy(update.buffer, writeBlockMessage.buffer, writeBlockMessage.blockSize);
+		updateMap.insert(std::make_pair(writeBlockMessage.updateId, update));
+	}
+
+	// for (uint32_t i = 0;;i++)
+	// 	std::map<uint32_t, Update>::iterator iter = updateMap.find(i);
+	// 	if (iter == updateMap.end()) {
+	// 		break;
+	// 	} else {
+	// 		latestValidUpdateId = i;
+	// 	}
+	// }
 }
 
 void ServerInstance:: sendCloseAckMessage(int fileDesc) {
@@ -145,14 +173,13 @@ void ServerInstance:: procCloseMessage(char *buf) {
 
 	closeMsg.print();
 
-	std::map<int, FILE*>::iterator it = fileId_map.find(closeMsg.fileId);
-	if (it != fileId_map.end()) {
-		int ret = fclose(it->second);
-		fileId_map.erase(it);
+	if (isFileOpen == true) {
+		int ret = fclose(fp);
 		if (ret == 0)
 			sendCloseAckMessage(0);
 		else
 			sendCloseAckMessage(-1);
+		isFileOpen = false;
 	} else {
 		sendCloseAckMessage(-1);
 	}

@@ -15,7 +15,10 @@
 class ServerInstance: public NetworkInstance {
 public:
 	char *filePath;
-	std::map<int, FILE*> fileId_map;
+	FILE* fp;
+	bool isFileOpen;
+	std::map<uint32_t, Update> updateMap;
+	uint32_t latestValidUpdateId;
 
 	ServerInstance(int packetLoss, uint32_t nodeId, char* filePath);
 
