@@ -107,7 +107,7 @@ bool NetworkInstance:: rfs_IsRecvPacket(bool nodeType) {
   	FD_SET(sockfd, &fdmask);
   	if (!nodeType)
   		timeout.tv_sec = 0;
-  	else
+  	else	// server block 5 seconds
   		timeout.tv_sec = 5;
 	timeout.tv_usec = 0;
 
@@ -128,8 +128,8 @@ bool NetworkInstance:: rfs_IsRecvPacket(bool nodeType) {
 ssize_t NetworkInstance:: rfs_RecvFrom(char* buf, int length) {
 	socklen_t fromLen = sizeof(Sockaddr);
 
-	ssize_t cc = recvfrom(this->sockfd, buf, length, 0, 
-		(struct sockaddr *)&this->groupAddr, &fromLen);
+	ssize_t cc = recvfrom(sockfd, buf, length, 0, 
+		(struct sockaddr *)&groupAddr, &fromLen);
 	
 	if (cc < 0 && errno != EINTR)
 		perror("event recvfrom");
