@@ -39,22 +39,22 @@ void NetworkInstance:: rfs_NetInit(unsigned short port) {
 	u_char          ttl;
 	struct ip_mreq  mreq;
 
-	this->sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-	if (this->sockfd < 0)
-	  RFSError("can't get socket");
+	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sockfd < 0)
+	  	RFSError("can't get socket");
 
 	/* SO_REUSEADDR allows more than one binding to the same
 	   socket - you cannot have more than one player on one
 	   machine without this */
 	reuse = 1;
-	if (setsockopt(this->sockfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) < 0) {
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) < 0) {
 		RFSError("setsockopt failed (SO_REUSEADDR)");
 	}
 
 	nullAddr.sin_family = AF_INET;
 	nullAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	nullAddr.sin_port = htons(port);
-	if (bind(this->sockfd, (struct sockaddr *)&nullAddr, sizeof(nullAddr)) < 0)
+	if (bind(sockfd, (struct sockaddr *)&nullAddr, sizeof(nullAddr)) < 0)
 	  RFSError("netInit binding");
 
 	/* Multicast TTL:
@@ -70,14 +70,14 @@ void NetworkInstance:: rfs_NetInit(unsigned short port) {
 	*/
 
 	ttl = 1;
-	if (setsockopt(this->sockfd, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, sizeof(ttl)) < 0) {
+	if (setsockopt(sockfd, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, sizeof(ttl)) < 0) {
 		RFSError("setsockopt failed (IP_MULTICAST_TTL)");
 	}
 
 	/* join the multicast group */
 	mreq.imr_multiaddr.s_addr = htonl(RFS_GROUP);
 	mreq.imr_interface.s_addr = htonl(INADDR_ANY);
-	if (setsockopt(this->sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq)) < 0) {
+	if (setsockopt(sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq)) < 0) {
 		RFSError("setsockopt failed (IP_ADD_MEMBERSHIP)");
 	}
 
