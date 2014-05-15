@@ -88,9 +88,15 @@ void NetworkInstance:: rfs_NetInit(unsigned short port) {
 }
 
 ssize_t NetworkInstance:: rfs_SendTo(char *buf, int length) {
-	ssize_t cc = sendto(this->sockfd, buf, length, 0, 
-		(struct sockaddr *)&this->groupAddr, sizeof(Sockaddr));
+	ssize_t cc = sendto(sockfd, buf, length, 0, 
+		(struct sockaddr *)&groupAddr, sizeof(Sockaddr));
 
+	if (cc < 0) {
+		perror("sendto");
+		printf("error sendto\n");
+	} else {
+		printf("send message len: %d\n", (int)cc);
+	}
 	return cc;
 }
 
