@@ -95,7 +95,7 @@ ssize_t NetworkInstance:: rfs_SendTo(char *buf, int length) {
 	if (cc < 0) {
 		perror("sendto()");
 	} else {
-		printf("send message len: %d\n", (int)cc);
+		printf("Send message len: %d\n", (int)cc);
 	}
 	return cc;
 }
@@ -118,7 +118,7 @@ bool NetworkInstance:: rfs_IsRecvPacket(bool nodeType) {
 	}
 	else if (!ret) {
 		if (nodeType)
-			printf("No Data receive in 5 seconds\n");
+			printf("Server no data receive in 5 seconds\n");
 		return false;
 	} else {
 		return FD_ISSET(sockfd, &fdmask);

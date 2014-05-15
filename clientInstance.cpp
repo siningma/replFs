@@ -21,7 +21,6 @@ int ClientInstance:: procInitAckMessage(char *buf) {
 	InitAckMessage initAckMessage;
 	initAckMessage.deserialize(buf);
 
-	printf("Recv Message: ");
 	initAckMessage.print();
 
 	if ((int)serverIds.size() == numServers)
@@ -46,7 +45,6 @@ int ClientInstance:: procOpenFileAckMessage(char *buf) {
 	OpenFileAckMessage openFileAckMessage;
 	openFileAckMessage.deserialize(buf);
 
-	printf("Recv Message: ");
 	openFileAckMessage.print();
 
 	if (openFileAckMessage.fileDesc < 0)

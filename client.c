@@ -54,7 +54,7 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
         }
 
         getCurrentTime(&now);
-        if (isTimeOut(&now, &first, 4000)) {
+        if (isTimeOut(&now, &first, 3000)) {
               break;
         } else {
             char buf[HEADER_SIZE];
@@ -62,6 +62,7 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
 
             if (client->rfs_IsRecvPacket(FALSE)) {
                 int status = client->rfs_RecvFrom(buf, HEADER_SIZE);
+                printf("Client recv message size: %d ", (int)status);
 
                 if (client->isMessageSentByMe(buf))
                     continue;

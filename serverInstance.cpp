@@ -53,7 +53,7 @@ void ServerInstance:: execute() {
 
 			ssize_t status = rfs_RecvFrom(buf, sizeof(buf));
 			
-			printf("Server recv message size: %d\n", (int)status);
+			printf("Server recv message size: %d ", (int)status);
 			if (isMessageSentByMe(buf))
 				continue;
 
@@ -94,7 +94,6 @@ int ServerInstance:: procInitMessage(char *buf) {
 	InitMessage initMessage;
 	initMessage.deserialize(buf);
 
-	printf("Recv Message: ");
 	initMessage.print();
 
 	sendInitAckMessage();
@@ -111,7 +110,6 @@ int ServerInstance:: procOpenFileMessage(char *buf) {
 	OpenFileMessage openFileMessage;
 	openFileMessage.deserialize(buf);
 
-	printf("Recv Message: ");
 	openFileMessage.print();
 
 	char *fileFullname = strcat(filePath, openFileMessage.filename);
