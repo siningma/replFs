@@ -123,6 +123,7 @@ bool NetworkInstance:: rfs_recvData() {
   	FD_SET(sockfd, &fdmask);
   	timeout.tv_sec = 0;
 	timeout.tv_usec = 0;
+	int ret = 0;
 
 	while ((ret = select(32, &fdmask, NULL, NULL, &timeout)) == -1)
 	    if (errno != EINTR)
