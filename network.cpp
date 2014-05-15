@@ -22,8 +22,9 @@ bool isTimeOut(struct timeval *curr, struct timeval *last, uint32_t millisecond)
 	return ((curr->tv_sec - last->tv_sec) * 1000 + (curr->tv_usec - last->tv_usec) / 1000) >= millisecond;
 }
 
-bool isDropPacket(int packetLoss) { 
-	return ((unsigned int)rand() % 100) < packetLoss;
+bool isDropPacket(int packetLoss) {
+	srand(time(NULL));
+	return (rand() % 100) < packetLoss;
 }
 
 NetworkInstance:: NetworkInstance(int packetLoss, uint32_t nodeId) {
@@ -92,8 +93,7 @@ ssize_t NetworkInstance:: rfs_SendTo(char *buf, int length) {
 		(struct sockaddr *)&groupAddr, sizeof(Sockaddr));
 
 	if (cc < 0) {
-		perror("sendto");
-		printf("error sendto\n");
+		perror("sendto()");
 	} else {
 		printf("send message len: %d\n", (int)cc);
 	}
