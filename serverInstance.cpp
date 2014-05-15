@@ -81,8 +81,6 @@ void ServerInstance:: execute() {
 					break;
 				}
 			}
-		} else {
-			printf("Server receives no data\n");
 		}
 	}
 }

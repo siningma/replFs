@@ -125,7 +125,7 @@ bool NetworkInstance:: rfs_recvData() {
 	timeout.tv_usec = 0;
 	int ret = 0;
 
-	while ((ret = select(32, &fdmask, NULL, NULL, &timeout)) == -1)
+	while ((ret = select(sockfd + 1, &fdmask, NULL, NULL, &timeout)) == -1)
 	    if (errno != EINTR)
 	    	RFSError("select error on events");
 
