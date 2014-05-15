@@ -7,7 +7,7 @@
 
 #include "clientInstance.h"
 
-ClientInstance:: ClientInstance(int packetLoss, uint32_t nodeId, int numServers, unsigned int group): NetworkInstance(packetLoss, nodeId, group) {
+ClientInstance:: ClientInstance(int packetLoss, uint32_t nodeId, int numServers): NetworkInstance(packetLoss, nodeId) {
 	this->numServers = numServers;
 }
 

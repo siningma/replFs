@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
 	uint32_t nodeId = (uint32_t)rand();
 
 	printf("Server port: %u, filePath: %s, packetLoss: %d, nodeId: %010u\n", port, filePath, packetLoss, nodeId);
-	ServerInstance *server = new ServerInstance(packetLoss, nodeId, filePath, RFS_GROUP);
+	ServerInstance *server = new ServerInstance(packetLoss, nodeId, filePath);
 
 	int err = mkdir(filePath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	if (err == -1) {
@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-ServerInstance:: ServerInstance(int packetLoss, uint32_t nodeId, char* filePath, unsigned int group): NetworkInstance(packetLoss, nodeId, group) {
+ServerInstance:: ServerInstance(int packetLoss, uint32_t nodeId, char* filePath): NetworkInstance(packetLoss, nodeId) {
 	int len = strlen(filePath) + 1;
 
 	this->filePath = new char[len];
@@ -47,12 +47,11 @@ ServerInstance:: ServerInstance(int packetLoss, uint32_t nodeId, char* filePath,
 }
 
 void ServerInstance:: execute() {
-	char buf[BUF_SIZE];
 
 	while(1) {
-		memset(buf, 0, BUF_SIZE);
-
-		if (rfs_recvData(100)) {	// server is blocking IO
+		if (rfs_recvData()) {	// server is blocking IO
+			char buf[BUF_SIZE];
+			memset(buf, 0, BUF_SIZE);
 
 			ssize_t status = rfs_recvFrom(buf, BUF_SIZE);
 			

@@ -76,7 +76,7 @@ void NetworkInstance:: rfs_netInit(unsigned short port) {
 	}
 
 	/* join the multicast group */
-	mreq.imr_multiaddr.s_addr = htonl(this->group);
+	mreq.imr_multiaddr.s_addr = htonl(RFS_GROUP);
 	mreq.imr_interface.s_addr = htonl(INADDR_ANY);
 	if (setsockopt(this->sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq)) < 0) {
 		RFSError("setsockopt failed (IP_ADD_MEMBERSHIP)");
@@ -95,28 +95,41 @@ ssize_t NetworkInstance:: rfs_sendTo(char *buf, int length) {
 	return cc;
 }
 
-bool NetworkInstance:: rfs_recvData(int pollTimeout) {
-    struct pollfd udp;
-    memset(&udp, 0, sizeof(struct pollfd));
+bool NetworkInstance:: rfs_recvData() {
+    // struct pollfd udp;
+    // memset(&udp, 0, sizeof(struct pollfd));
 
-    udp.fd = this->sockfd;
-    udp.events = POLLIN;
+    // udp.fd = this->sockfd;
+    // udp.events = POLLIN;
 
-    int ret = poll(&udp, 1, pollTimeout);
+    // int ret = poll(&udp, 1, pollTimeout);
 
-    if (ret < 0) {
-        RFSError("poll error"); 
-        return false;  
-    } else {
-        if (udp.revents & POLLIN) {
-        	printf("has data\n");
-        	return true;
-        }
-        else {
-        	printf("no data\n");
-        	return false;
-        }
-    }
+    // if (ret < 0) {
+    //     RFSError("poll error"); 
+    //     return false;  
+    // } else {
+    //     if (udp.revents & POLLIN) {
+    //     	printf("has data\n");
+    //     	return true;
+    //     }
+    //     else {
+    //     	printf("no data\n");
+    //     	return false;
+    //     }
+    // }
+
+    fd_set	fdmask;
+    struct timeval timeout;
+	FD_ZERO(&fdmask);
+  	FD_SET(sockfd, &fdmask);
+  	timeout.tv_sec = 0;
+	timeout.tv_usec = 0;
+
+	while ((ret = select(32, &fdmask, NULL, NULL, &timeout)) == -1)
+	    if (errno != EINTR)
+	    	RFSError("select error on events");
+
+	return FD_ISSET(sockfd, &fdmask);
 }
 
 ssize_t NetworkInstance:: rfs_recvFrom(char* buf, int length) {
