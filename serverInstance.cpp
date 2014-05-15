@@ -48,7 +48,8 @@ ServerInstance:: ServerInstance(int packetLoss, uint32_t nodeId, char* filePath)
 
 void ServerInstance:: execute() {
 	while(1) {
-		if (rfs_IsRecvPacket()) {
+		if (rfs_IsRecvPacket(TRUE)) {
+
 			char buf[MAXBUFSIZE];
 			memset(buf, 0, MAXBUFSIZE);
 
@@ -87,11 +88,7 @@ void ServerInstance:: execute() {
 void ServerInstance:: sendInitAckMessage() {
 	InitAckMessage initAckMsg(this->nodeId, getMsgSeqNum());
 
-	char buf[HEADER_SIZE];
-	memset(buf, 0, HEADER_SIZE);
-	initAckMsg.serialize(buf);
-
-	dropOrSendMessage(&initAckMsg, buf, HEADER_SIZE);
+	dropOrSendMessage(&initAckMsg, HEADER_SIZE);
 }
 
 int ServerInstance:: procInitMessage(char *buf) {
@@ -108,11 +105,7 @@ int ServerInstance:: procInitMessage(char *buf) {
 void ServerInstance:: sendOpenFileAckMessage(int fileDesc) {
 	OpenFileAckMessage openFileAckMessage(this->nodeId, getMsgSeqNum(), fileDesc);
 
-	char buf[HEADER_SIZE];
-	memset(buf, 0, HEADER_SIZE);
-	openFileAckMessage.serialize(buf);
-
-	dropOrSendMessage(&openFileAckMessage, buf, HEADER_SIZE);
+	dropOrSendMessage(&openFileAckMessage, HEADER_SIZE);
 }
 
 int ServerInstance:: procOpenFileMessage(char *buf) {

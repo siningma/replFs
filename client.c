@@ -17,7 +17,7 @@
 #include <client.h>
 #include "clientInstance.h"
 
-static ClientInstance *client;
+ClientInstance *client;
 
 /* ------------------------------------------------------------------ */
 
@@ -51,7 +51,6 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
         getCurrentTime(&now);
         if (isTimeOut(&now, &last, SEND_MSG_INTERVAL)) {
             client->sendInitMessage();
-            usleep(50000);
             getCurrentTime(&last);
         }
 
@@ -62,8 +61,9 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
             char buf[HEADER_SIZE];
             memset(buf, 0, HEADER_SIZE);
 
-            if (client->rfs_IsRecvPacket()) {
+            if (client->rfs_IsRecvPacket(FALSE)) {
                 int status = client->rfs_RecvFrom(buf, HEADER_SIZE);
+
                 if (client->isMessageSentByMe(buf))
                     continue;
 

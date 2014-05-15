@@ -246,13 +246,13 @@ public:
 	void rfs_NetInit(unsigned short port);
 
 	ssize_t rfs_SendTo(char *buf, int length);
-	bool rfs_IsRecvPacket();
+	bool rfs_IsRecvPacket(bool nodeType);
 	ssize_t rfs_RecvFrom(char* buf, int length);
 
-	void dropOrSendMessage(Message *msg, char *buf, int len);
+	void dropOrSendMessage(Message *msg, int len);
 };
 
-void RFSError(char *s);
+void RFSError(const char *s);
 void getCurrentTime(struct timeval *tv);
 bool isTimeOut(struct timeval *curr, struct timeval *last, uint32_t millisecond);
 bool isDropPacket(int packetLoss);

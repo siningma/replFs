@@ -13,12 +13,8 @@ ClientInstance:: ClientInstance(int packetLoss, uint32_t nodeId, int numServers)
 
 void ClientInstance:: sendInitMessage() {
 	InitMessage initMsg(this->nodeId, getMsgSeqNum());
-
-	char buf[HEADER_SIZE];
-	memset(buf, 0, HEADER_SIZE);
-	initMsg.serialize(buf);
 	
-	dropOrSendMessage(&initMsg, buf, HEADER_SIZE);
+	dropOrSendMessage(&initMsg, HEADER_SIZE);
 }
 
 int ClientInstance:: procInitAckMessage(char *buf) {
@@ -42,12 +38,8 @@ int ClientInstance:: procInitAckMessage(char *buf) {
 
 void ClientInstance:: sendOpenFileMessage(uint32_t fileId, char* filename) {
 	OpenFileMessage openFileMsg(this->nodeId, getMsgSeqNum(), fileId, filename);
-
-	char buf[HEADER_SIZE + 4 + strlen(filename)];
-	memset(buf, 0, HEADER_SIZE + 4 + strlen(filename));
-	openFileMsg.serialize(buf);
 	
-	dropOrSendMessage(&openFileMsg, buf, HEADER_SIZE + 4 + strlen(filename));
+	dropOrSendMessage(&openFileMsg, HEADER_SIZE + 4 + strlen(filename));
 }
 
 int ClientInstance:: procOpenFileAckMessage(char *buf) {

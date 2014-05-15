@@ -7,7 +7,7 @@
 
 #include "network.h"
 
-void RFSError(char *s) {
+void RFSError(const char *s) {
 	fprintf(stderr, "%s\n", s);
 	perror("CS244BRFSError");
 	exit(-1);
@@ -94,17 +94,22 @@ ssize_t NetworkInstance:: rfs_SendTo(char *buf, int length) {
 	return cc;
 }
 
-bool NetworkInstance:: rfs_IsRecvPacket() {
+bool NetworkInstance:: rfs_IsRecvPacket(bool nodeType) {
     fd_set	fdmask;
     struct timeval timeout;
 	FD_ZERO(&fdmask);
   	FD_SET(sockfd, &fdmask);
-  	timeout.tv_sec = 5;
+  	if (!nodeType)
+  		timeout.tv_sec = 0;
+  	else
+  		timeout.tv_sec = 5;
 	timeout.tv_usec = 0;
 
 	int ret = select(sockfd + 1, &fdmask, NULL, NULL, &timeout);
-	if (ret == -1)
+	if (ret == -1) {
 		perror("select()");
+		return false;
+	}
 	else if (!ret) {
 		printf("No Data receive in 5 seconds\n");
 		return false;
@@ -125,14 +130,18 @@ ssize_t NetworkInstance:: rfs_RecvFrom(char* buf, int length) {
 	return cc;
 }
 
-void NetworkInstance:: dropOrSendMessage(Message *msg, char *buf, int len) {
+void NetworkInstance:: dropOrSendMessage(Message *msg, int len) {
 	if (isDropPacket(packetLoss)) {
 		printf("Drop Message: ");
 		msg->print();
-	} else {
+	} else {	
+		char buf[len];
+		memset(buf, 0, len);
+		msg->serialize(buf);
+
+		rfs_SendTo(buf, len);
 		printf("Send Message: ");
 		msg->print();
-		rfs_SendTo(buf, len);
 	}
 }
 
