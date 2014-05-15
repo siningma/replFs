@@ -75,10 +75,10 @@ main() {
   /**************************************/
   /* Close the writes to the server(s) */
   /**************************************/
-  if ( CloseFile( fd ) < 0 ) {
-      printf( "Error Closing File '%s'\n", fileName );
-      return( ErrorExit );
-  }
+  // if ( CloseFile( fd ) < 0 ) {
+  //     printf( "Error Closing File '%s'\n", fileName );
+  //     return( ErrorExit );
+  // }
 
   // // printf( "Writes to file '%s' complete.\n", fileName );
   return( NormalExit );
