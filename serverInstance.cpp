@@ -58,12 +58,12 @@ void ServerInstance:: execute() {
 				continue;
 
 			if (status > 0) {
+				unsigned char msgType = buf[0];
+
 				if (isDropPacket(packetLoss)) {
-					printf("Drop Message: Recv Message: MsgType: 0x%02x\n", buf[0]);
+					printf("Drop Message: Recv Message: MsgType: 0x%02x\n", msgType);
 					continue;
 				}
-
-				unsigned char msgType = buf[0];
 
 				switch(msgType) {
 					case INIT:
