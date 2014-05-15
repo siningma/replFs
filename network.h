@@ -28,6 +28,7 @@
 #include <string.h>
 #include <assert.h>
 #include <vector>
+#include <map>
 
 #ifndef	TRUE
 #define	TRUE		1
@@ -52,6 +53,11 @@
 
 #define HEADER_SIZE 	10	
 #define SEND_MSG_INTERVAL 	200
+#define THREE_TIMEOUT 	3000
+#define FOUR_TIMEOUT 	4000
+
+#define CLIENT_NODE 	0
+#define SERVER_NODE 	1
 
 typedef	struct sockaddr_in			Sockaddr;
 
@@ -116,11 +122,11 @@ public:
 
 class OpenFileMessage: public Message {
 public:
-	uint32_t fileId;
+	int fileId;
 	char filename[128];
 
 	OpenFileMessage() {}
-	OpenFileMessage(uint32_t nodeId, uint32_t seqNum, uint32_t fileId, char* filename): Message(OPENFILE, nodeId, seqNum) {
+	OpenFileMessage(uint32_t nodeId, uint32_t seqNum, int fileId, char* filename): Message(OPENFILE, nodeId, seqNum) {
 		this->fileId = fileId;
 		memset(this->filename, 0, 128);
 		memcpy(this->filename, filename, strlen(filename));
@@ -136,7 +142,7 @@ public:
 	void deserialize(char *buf) { 
 		Message::deserialize(buf);
 		uint32_t msg_fileId = 0;
-		memcpy(&msg_fileId, buf + 2, 4);
+		memcpy(&msg_fileId, buf + HEADER_SIZE, 4);
 		fileId = ntohl(msg_fileId);
 		memcpy(filename, buf + HEADER_SIZE + 4, 128);
 	}
@@ -165,7 +171,7 @@ public:
 	void deserialize(char *buf) { 
 		Message::deserialize(buf);
 		int msg_fileDesc = 0;
-		memcpy(&msg_fileDesc, buf + 2, 4);
+		memcpy(&msg_fileDesc, buf + HEADER_SIZE, 4);
 		fileDesc = ntohl(msg_fileDesc);
 	}
 
@@ -175,12 +181,68 @@ public:
 	}
 };
 
+class WriteBlockMessage: public Message {
+public:
+	int fileId;
+	uint32_t updateId;
+	int byteOffset;
+	int blockSize;
+	char *buffer;
+
+	WriteBlockMessage() {}
+	WriteBlockMessage(uint32_t nodeId, uint32_t seqNum, int fileId, 
+		uint32_t updateId, int byteOffset, int blockSize, char *buffer): Message(WRITEBLOCK, nodeId, seqNum) {
+		this->nodeId = nodeId;
+		this->seqNum = seqNum;
+		this->fileId = fileId;
+		this->updateId = updateId;
+		this->byteOffset = byteOffset;
+		this->blockSize = blockSize;
+		this->buffer = buffer;
+	}
+
+	void serialize(char *buf) {
+		Message::serialize(buf);
+		int msg_fileId = htonl(fileId);
+		memcpy(buf + HEADER_SIZE, &msg_fileId, 4);
+		uint32_t msg_updateId = htonl(updateId);
+		memcpy(buf + HEADER_SIZE + 4, &msg_updateId, 4);
+		int msg_byteOffset = htonl(byteOffset);
+		memcpy(buf + HEADER_SIZE + 8, &msg_byteOffset, 4);
+		int msg_blockSize = htonl(blockSize);
+		memcpy(buf + HEADER_SIZE + 12, &msg_blockSize, 4);
+		memcpy(buf + HEADER_SIZE + 16, buffer, blockSize);
+	}
+
+	void deserialize(char *buf) { 
+		Message::deserialize(buf);
+		int msg_fileId = 0;
+		memcpy(&msg_fileId, buf + HEADER_SIZE, 4);
+		fileId = ntohl(msg_fileId);
+		int msg_updateId = 0;
+		memcpy(&msg_updateId, buf + HEADER_SIZE + 4, 4);
+		updateId = ntohl(msg_updateId);
+		int msg_byteOffset = 0;
+		memcpy(&msg_byteOffset, buf + HEADER_SIZE + 8, 4);
+		byteOffset = ntohl(msg_byteOffset);
+		int msg_blockSize = 0;
+		memcpy(&msg_blockSize, buf + HEADER_SIZE + 12, 4);
+		blockSize = ntohl(msg_blockSize);
+		memcpy(buffer, buf + HEADER_SIZE + 16, blockSize);
+	}
+
+	void print() { 
+		Message::print();
+		printf("fileId: %d, updateId: %u, byteOffset: %d, blockSize: %d\n", fileId, updateId, byteOffset, blockSize);
+	}
+};
+
 class CloseMessage: public Message {
 public:
-	uint32_t fileId;
+	int fileId;
 
 	CloseMessage() {}
-	CloseMessage(uint32_t nodeId, uint32_t seqNum, uint32_t fileId): Message(CLOSE, nodeId, seqNum){
+	CloseMessage(uint32_t nodeId, uint32_t seqNum, int fileId): Message(CLOSE, nodeId, seqNum){
 		this->fileId = fileId;
 	}
 
@@ -239,6 +301,8 @@ public:
 	Sockaddr groupAddr;
 	uint32_t msgSeqNum;
 
+	int nodeType;
+
 	NetworkInstance(int packetLoss, uint32_t nodeId);
 
 	uint32_t getMsgSeqNum();
@@ -246,7 +310,7 @@ public:
 	void rfs_NetInit(unsigned short port);
 
 	ssize_t rfs_SendTo(char *buf, int length);
-	bool rfs_IsRecvPacket(bool nodeType);
+	bool rfs_IsRecvPacket();
 	ssize_t rfs_RecvFrom(char* buf, int length);
 
 	void dropOrSendMessage(Message *msg, int len);

@@ -42,11 +42,12 @@ ServerInstance:: ServerInstance(int packetLoss, uint32_t nodeId, char* filePath)
 	this->filePath = new char[len];
 	memset(this->filePath, 0, len);
 	memcpy(this->filePath, filePath, len);
+	this->nodeType = SERVER_NODE;
 }
 
 void ServerInstance:: execute() {
 	while(1) {
-		if (rfs_IsRecvPacket(TRUE)) {
+		if (rfs_IsRecvPacket()) {
 
 			char buf[MAXBUFSIZE];
 			memset(buf, 0, MAXBUFSIZE);
@@ -76,6 +77,10 @@ void ServerInstance:: execute() {
 						procOpenFileMessage(buf);
 						break;
 					}
+					case CLOSE:
+					{
+						procCloseMessage(buf);
+					}
 					default:
 					break;
 				}
@@ -90,14 +95,13 @@ void ServerInstance:: sendInitAckMessage() {
 	dropOrSendMessage(&initAckMsg, HEADER_SIZE);
 }
 
-int ServerInstance:: procInitMessage(char *buf) {
+void ServerInstance:: procInitMessage(char *buf) {
 	InitMessage initMessage;
 	initMessage.deserialize(buf);
 
 	initMessage.print();
 
 	sendInitAckMessage();
-	return 0;
 }
 
 void ServerInstance:: sendOpenFileAckMessage(int fileDesc) {
@@ -106,20 +110,44 @@ void ServerInstance:: sendOpenFileAckMessage(int fileDesc) {
 	dropOrSendMessage(&openFileAckMessage, HEADER_SIZE);
 }
 
-int ServerInstance:: procOpenFileMessage(char *buf) {
+void ServerInstance:: procOpenFileMessage(char *buf) {
 	OpenFileMessage openFileMessage;
 	openFileMessage.deserialize(buf);
 
 	openFileMessage.print();
 
 	char *fileFullname = strcat(filePath, openFileMessage.filename);
-	pf = fopen(fileFullname, "r+b");
+	FILE *pf = fopen(fileFullname, "r+b");
 	if (!pf) {
 		sendOpenFileAckMessage(-1);
-		return -1;
 	} else {
+		fileId_map.insert(std::make_pair(openFileMessage.fileId, pf));
 		sendOpenFileAckMessage(0);
-		return 0;
+	}
+}
+
+void ServerInstance:: sendCloseAckMessage(int fileDesc) {
+	CloseAckMessage closeAckMessage(nodeId, getMsgSeqNum(), fileDesc);
+
+	dropOrSendMessage(&closeAckMessage, HEADER_SIZE);
+}
+
+void ServerInstance:: procCloseMessage(char *buf) {
+	CloseMessage closeMsg;
+	closeMsg.deserialize(buf);
+
+	closeMsg.print();
+
+	std::map<int, FILE*>::iterator it = fileId_map.find(closeMsg.fileId);
+	if (it != fileId_map.end()) {
+		int ret = fclose(it->second);
+		fileId_map.erase(it);
+		if (ret == 0)
+			sendCloseAckMessage(0);
+		else
+			sendCloseAckMessage(-1);
+	} else {
+		sendCloseAckMessage(-1);
 	}
 }
 

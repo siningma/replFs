@@ -102,14 +102,14 @@ ssize_t NetworkInstance:: rfs_SendTo(char *buf, int length) {
 	return cc;
 }
 
-bool NetworkInstance:: rfs_IsRecvPacket(bool nodeType) {
+bool NetworkInstance:: rfs_IsRecvPacket() {
     fd_set	fdmask;
     struct timeval timeout;
 	FD_ZERO(&fdmask);
   	FD_SET(sockfd, &fdmask);
-  	if (!nodeType)
+  	if (nodeType == CLIENT_NODE) 	// non blocking IO
   		timeout.tv_sec = 0;
-  	else	// server block 5 seconds
+  	else	// server blocks 5 seconds
   		timeout.tv_sec = 5;
 	timeout.tv_usec = 0;
 
@@ -117,10 +117,10 @@ bool NetworkInstance:: rfs_IsRecvPacket(bool nodeType) {
 	if (ret == -1) {
 		perror("select()");
 		return false;
-	}
-	else if (!ret) {
-		if (nodeType)
-			printf("Server no data receive in 5 seconds\n");
+	} else if (!ret) {
+		if (nodeType == SERVER_NODE)
+			printf("Server receives no data in 5 seconds\n");
+
 		return false;
 	} else {
 		return FD_ISSET(sockfd, &fdmask);
@@ -153,7 +153,6 @@ void NetworkInstance:: dropOrSendMessage(Message *msg, int len) {
 		msg->print();
 	}
 }
-
 
 uint32_t NetworkInstance:: getMsgSeqNum() {
 	if (msgSeqNum == (uint32_t)~0) {

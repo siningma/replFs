@@ -15,15 +15,18 @@
 class ServerInstance: public NetworkInstance {
 public:
 	char *filePath;
-	FILE *pf;
+	std::map<int, FILE*> fileId_map;
 
 	ServerInstance(int packetLoss, uint32_t nodeId, char* filePath);
 
 	void execute();
 	void sendInitAckMessage();
-	int procInitMessage(char *buf);
+	void procInitMessage(char *buf);
 	void sendOpenFileAckMessage(int fileDesc);
-	int procOpenFileMessage(char *buf);
+	void procOpenFileMessage(char *buf);
+
+	void sendCloseAckMessage(int fileDesc);
+	void procCloseMessage(char *buf);
 };
 
 #endif

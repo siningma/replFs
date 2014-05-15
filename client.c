@@ -53,14 +53,13 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
             getCurrentTime(&last);
         }
 
-        getCurrentTime(&now);
         if (isTimeOut(&now, &first, 3000)) {
               break;
         } else {
             char buf[HEADER_SIZE];
             memset(buf, 0, HEADER_SIZE);
 
-            if (client->rfs_IsRecvPacket(FALSE)) {
+            if (client->rfs_IsRecvPacket()) {
                 int status = client->rfs_RecvFrom(buf, HEADER_SIZE);
                 printf("Recv message size: %d, ", (int)status);
 
@@ -76,6 +75,12 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
     }
 
     printf("Receive serverId count: %d\n", (int)client->serverIds.size());
+    printf("Server Ids: ");
+    for (int i = 0; i < (int)client->serverIds.size(); i++) {
+        printf("%010u, ", client->serverIds[i]);
+    }
+    printf("\n");
+
     if ((int)client->serverIds.size() < numServers)
         return ( ErrorReturn );
     else
@@ -89,6 +94,9 @@ OpenFile( char * fileName ) {
     int fd;
 
     ASSERT( fileName );
+
+    if (fileName == NULL || strlen(fileName) >= MAXFILENAMESIZE)
+        return -1;
 
 #ifdef DEBUG
     printf( "OpenFile: Opening File '%s'\n", fileName );
@@ -190,6 +198,42 @@ CloseFile( int fd ) {
   	/*****************************/
   	/* Check for Commit or Abort */
   	/*****************************/
+    struct timeval first;
+    struct timeval last;
+    struct timeval now;
+
+    memset(&last, 0, sizeof(struct timeval));
+    getCurrentTime(&first);
+    while(1) {
+        getCurrentTime(&now);
+        if (isTimeOut(&now, &last, SEND_MSG_INTERVAL)) {
+            client->sendCloseMessage(fd);
+            getCurrentTime(&last);
+        }
+
+        if (isTimeOut(&now, &first, THREE_TIMEOUT)) {
+              break;
+        } else {
+            char buf[HEADER_SIZE];
+            memset(buf, 0, HEADER_SIZE);
+
+            if (client->rfs_IsRecvPacket()) {
+                int status = client->rfs_RecvFrom(buf, HEADER_SIZE);
+                printf("Recv message size: %d, ", (int)status);
+
+                if (client->isMessageSentByMe(buf))
+                    continue;
+
+                if (status > 0) {
+                    if (client->procCloseAckMessage(buf) == -1) {
+                        return(ErrorReturn);
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+    }
 
     if ( close( fd ) < 0 ) {
         perror("Close");
