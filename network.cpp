@@ -125,7 +125,7 @@ bool NetworkInstance:: rfs_IsRecvPacket() {
   		timeout.tv_sec = 5;
 	timeout.tv_usec = 0;
 
-	int ret = select(sockfd + 1, &fdmask, NULL, NULL, &timeout);
+	int ret = select(32, &fdmask, NULL, NULL, &timeout);
 	if (ret == -1) {
 		perror("select()");
 		return false;
