@@ -49,7 +49,7 @@ ServerInstance:: ServerInstance(int packetLoss, uint32_t nodeId, std::string mou
 void ServerInstance:: execute() {
 	while(1) {
 		bool isRecvPacket = rfs_IsRecvPacket();
-		printf("receive packets\n");
+		printf("receive packets: %d\n", isRecvPacket);
 
 		if (isRecvPacket) {
 			char buf[MAXBUFSIZE];

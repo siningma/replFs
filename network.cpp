@@ -63,7 +63,7 @@ void NetworkInstance:: rfs_NetInit(unsigned short port) {
 	/* SO_REUSEADDR allows more than one binding to the same
 	   socket - you cannot have more than one player on one
 	   machine without this */
-	reuse = 1;
+	reuse = 32;
 	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) < 0) {
 		RFSError("setsockopt failed (SO_REUSEADDR)");
 	}
