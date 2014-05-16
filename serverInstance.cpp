@@ -58,21 +58,18 @@ void ServerInstance:: execute() {
 				if (status < HEADER_SIZE)
                         continue;
 
-				#ifdef DEBUG
-					unsigned char msgType = buf[0];
-					uint32_t msg_nodeId = 0;
-					memcpy(&msg_nodeId, buf + 2, 4);
-					msg_nodeId = ntohl(msg_nodeId);
-					uint32_t msg_seqNum = 0;
-					memcpy(&msg_seqNum, buf + 6, 4);
-					msg_seqNum = ntohl(msg_seqNum);
-					printf("Server receive one message msgType: 0x%02x, nodeId: %010u, msgSeqNum: %u\n\n", msgType, msg_nodeId, msg_seqNum);
-				#endif
+				unsigned char msgType = buf[0];
+				
+				uint32_t msg_nodeId = 0;
+				memcpy(&msg_nodeId, buf + 2, 4);
+				msg_nodeId = ntohl(msg_nodeId);
+				uint32_t msg_seqNum = 0;
+				memcpy(&msg_seqNum, buf + 6, 4);
+				msg_seqNum = ntohl(msg_seqNum);
+				printf("Server receive one message msgType: 0x%02x, nodeId: %010u, msgSeqNum: %u\n\n", msgType, msg_nodeId, msg_seqNum);
 
 				if (isMessageSentByMe(buf))
 					continue;
-
-				unsigned char msgType = buf[0];
 
 				if (isDropPacket(packetLoss)) {
 					printf("Drop Message: Recv Message: MsgType: 0x%02x\n", msgType);
