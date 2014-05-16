@@ -14,6 +14,80 @@ ClientInstance:: ClientInstance(int packetLoss, uint32_t nodeId, int numServers)
 	this->updateId = 0;
 }
 
+int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvServerId, char *fileName) {
+	struct timeval first;
+    struct timeval last;
+    struct timeval now;
+
+    memset(&last, 0, sizeof(struct timeval));
+    getCurrentTime(&first);
+    while(1) {
+        getCurrentTime(&now);
+        if (isTimeOut(&now, &last, SEND_MSG_INTERVAL)) {
+        	switch(opCode) {
+        		case INIT_OP:
+        		sendInitMessage();
+        		break;
+        		case OPEN_OP:
+        		sendOpenFileMessage(fd, fileName);
+        		break;
+        		case CLOSE_OP:
+        		sendCloseMessage(fd);
+        		break;
+        		default:
+        		break;
+        	}
+
+            getCurrentTime(&last);
+        }
+
+        if (isTimeOut(&now, &first, timeout)) {
+              break;
+        } else {
+            if (rfs_IsRecvPacket()) {
+                char buf[MAXBUFSIZE];
+                memset(buf, 0, MAXBUFSIZE);
+                int status = rfs_RecvFrom(buf, MAXBUFSIZE);
+
+                if (status > 0) {
+                    if (status < HEADER_SIZE)
+                        continue;
+
+                    if (isMessageSentByMe(buf))
+                        continue;
+
+                    unsigned char msgType = buf[0];
+                    if (isDropPacket(packetLoss)) {
+                        printf("Drop Message: Recv Message: MsgType: 0x%02x\n", msgType);
+                        continue;
+                    }
+
+                    printf("Recv message size: %d, ", (int)status);
+                    switch(opCode) {
+                    	case INIT_OP:
+                    	procInitAckMessage(buf);
+                    	break;
+                    	case OPEN_OP:
+                    	if (procOpenFileAckMessage(buf, recvServerId) == -1) {
+                    		return ( ErrorReturn );
+                    	}
+                        break;
+                        case CLOSE_OP:
+                        if (procCloseAckMessage(buf, recvServerId) == -1) {
+                        	return ( ErrorReturn );
+                    	} 
+                    	break;
+                    	default:
+                    	break;
+                    }                    
+                }
+            }
+        }
+    }
+
+    return (NormalReturn);
+}
+
 void ClientInstance:: sendInitMessage() {
 	InitMessage initMsg(nodeId, msgSeqNum);
 	msgSeqNum = getNextNum(msgSeqNum);

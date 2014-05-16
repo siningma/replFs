@@ -3,6 +3,20 @@
 
 #include "network.h"
 
+#define MAXFILENAMESIZE 128
+
+#define INIT_OP 0
+#define OPEN_OP 1
+#define VOTE_OP 2
+#define COMMIT_OP 3
+#define ABORT_OP 4
+#define CLOSE_OP 5
+
+enum {
+  NormalReturn = 0,
+  ErrorReturn = -1,
+};
+
 class ClientInstance : public NetworkInstance {
 public: 
 	int numServers;
@@ -13,10 +27,12 @@ public:
 
 	ClientInstance(int packetLoss, uint32_t nodeId, int numServers);
 
+	int execute(int opCode, int timeout, std::set<uint32_t> *recvServerId, char *fileName);
+
 	void sendInitMessage();
 	int procInitAckMessage(char *buf);
 
-	void sendOpenFileMessage(uint32_t fileId, char* filename);
+	void sendOpenFileMessage(uint32_t fileId, char *fileName);
 	int procOpenFileAckMessage(char *buf, std::set<uint32_t> *recvServerId);
 
 	void sendWriteBlockMessage(uint32_t fileId, uint32_t updateId, int byteOffset, int blockSize, char *buffer);

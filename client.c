@@ -40,46 +40,7 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
 
     client->rfs_NetInit(portNum);
 
-    struct timeval first;
-    struct timeval last;
-    struct timeval now;
-
-    memset(&last, 0, sizeof(struct timeval));
-    getCurrentTime(&first);
-    while(1) {
-        getCurrentTime(&now);
-        if (isTimeOut(&now, &last, SEND_MSG_INTERVAL)) {
-            client->sendInitMessage();
-            getCurrentTime(&last);
-        }
-
-        if (isTimeOut(&now, &first, SHORT_TIMEOUT)) {
-              break;
-        } else {
-            if (client->rfs_IsRecvPacket()) {
-                char buf[MAXBUFSIZE];
-                memset(buf, 0, MAXBUFSIZE);
-                int status = client->rfs_RecvFrom(buf, MAXBUFSIZE);
-
-                if (status > 0) {
-                    if (status < HEADER_SIZE)
-                        continue;
-
-                    if (client->isMessageSentByMe(buf))
-                        continue;
-
-                    unsigned char msgType = buf[0];
-                    if (isDropPacket(client->packetLoss)) {
-                        printf("Drop Message: Recv Message: MsgType: 0x%02x\n", msgType);
-                        continue;
-                    }
-
-                    printf("Recv message size: %d, ", (int)status);
-                    client->procInitAckMessage(buf);
-                }
-            }
-        }
-    }
+    client->execute(INIT_OP, SHORT_TIMEOUT, NULL, NULL); 
 
     printf("Receive serverId count: %d\n", (int)client->serverIds.size());
     printf("Server Ids: ");
@@ -91,7 +52,7 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
     if ((int)client->serverIds.size() < numServers)
         return ( ErrorReturn );
     else
-        return( NormalReturn );  
+        return( NormalReturn ); 
 }
 
 /* ------------------------------------------------------------------ */
@@ -106,50 +67,9 @@ OpenFile( char * fileName ) {
 #ifdef DEBUG
     printf( "OpenFile: Opening File '%s'\n", fileName );
 #endif
+
     std::set<uint32_t> recvServerId;
-
-    struct timeval first;
-    struct timeval last;
-    struct timeval now;
-
-    memset(&last, 0, sizeof(struct timeval));
-    getCurrentTime(&first);
-    while(1) {
-        getCurrentTime(&now);
-        if (isTimeOut(&now, &last, SEND_MSG_INTERVAL)) {
-            client->sendOpenFileMessage(client->fd, fileName);
-            getCurrentTime(&last);
-        }
-
-        if (isTimeOut(&now, &first, LONG_TIMEOUT)) {
-              break;
-        } else {
-            if (client->rfs_IsRecvPacket()) {
-                char buf[MAXBUFSIZE];
-                memset(buf, 0, MAXBUFSIZE);
-                int status = client->rfs_RecvFrom(buf, MAXBUFSIZE);
-                
-                if (status > 0) {
-                    if (status < HEADER_SIZE)
-                        continue;
-
-                    if (client->isMessageSentByMe(buf))
-                        continue;
-
-                    unsigned char msgType = buf[0];
-                    if (isDropPacket(client->packetLoss)) {
-                        printf("Drop Message: Recv Message: MsgType: 0x%02x\n", msgType);
-                        continue;
-                    }
-
-                    printf("Recv message size: %d, ", (int)status);
-                    int ret = client->procOpenFileAckMessage(buf, &recvServerId);
-                    if (ret == -1)
-                        return ( ErrorReturn );
-                }
-            }
-        }
-    }
+    client->execute(OPEN_OP, LONG_TIMEOUT, &recvServerId, fileName);
     
     if ((int)recvServerId.size() != client->numServers)
         return ( ErrorReturn );
@@ -251,49 +171,7 @@ CloseFile( int fd ) {
   	/* Check for Commit or Abort */
   	/*****************************/
     std::set<uint32_t> recvServerId;
-
-    struct timeval first;
-    struct timeval last;
-    struct timeval now;
-
-    memset(&last, 0, sizeof(struct timeval));
-    getCurrentTime(&first);
-    while(1) {
-        getCurrentTime(&now);
-        if (isTimeOut(&now, &last, SEND_MSG_INTERVAL)) {
-            client->sendCloseMessage(fd);
-            getCurrentTime(&last);
-        }
-
-        if (isTimeOut(&now, &first, SHORT_TIMEOUT)) {
-              break;
-        } else {
-            if (client->rfs_IsRecvPacket()) {
-                char buf[MAXBUFSIZE];
-                memset(buf, 0, MAXBUFSIZE);
-                int status = client->rfs_RecvFrom(buf, MAXBUFSIZE);
-
-                if (status > 0) {
-                    if (status < HEADER_SIZE)
-                        continue;
-
-                    if (client->isMessageSentByMe(buf))
-                        continue;
-
-                    unsigned char msgType = buf[0];
-                    if (isDropPacket(client->packetLoss)) {
-                        printf("Drop Message: Recv Message: MsgType: 0x%02x\n", msgType);
-                        continue;
-                    }
-
-                    printf("Recv message size: %d, ", (int)status);
-                    if (client->procCloseAckMessage(buf, &recvServerId) == -1) {
-                        return(ErrorReturn);
-                    } 
-                }
-            }
-        }
-    }
+    client->execute(CLOSE_OP, SHORT_TIMEOUT, &recvServerId, NULL);
 
     if ((int)recvServerId.size() != client->numServers)
         return ( ErrorReturn );

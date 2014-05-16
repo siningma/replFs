@@ -5,15 +5,8 @@
 /* Spring 2013	        */
 /************************/
 
-#define MAXFILENAMESIZE 128
-
 int const MaxWrites = 128;
 int const MaxBlockLength = 512;
-
-enum {
-  NormalReturn = 0,
-  ErrorReturn = -1,
-};
 
 /* ------------------------------------------------------------------ */
 
