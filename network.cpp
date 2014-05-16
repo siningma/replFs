@@ -63,7 +63,7 @@ void NetworkInstance:: rfs_NetInit(unsigned short port) {
 	/* SO_REUSEADDR allows more than one binding to the same
 	   socket - you cannot have more than one player on one
 	   machine without this */
-	reuse = 32;
+	reuse = 1;
 	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) < 0) {
 		RFSError("setsockopt failed (SO_REUSEADDR)");
 	}
@@ -100,7 +100,7 @@ void NetworkInstance:: rfs_NetInit(unsigned short port) {
 
 	/* Get the multi-cast address ready to use in SendData()
            calls. */
-	memcpy(&groupAddr, &nullAddr, sizeof(Sockaddr));
+	memcpy(&groupAddr, &nullAddr, sizeof(sockaddr_in));
 	groupAddr.sin_addr.s_addr = htonl(RFS_GROUP);
 }
 
