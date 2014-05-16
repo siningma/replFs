@@ -53,7 +53,7 @@ void ServerInstance:: execute() {
 			char buf[MAXBUFSIZE];
 			memset(buf, 0, MAXBUFSIZE);
 
-			ssize_t status = rfs_RecvFrom(buf, sizeof(buf));
+			ssize_t status = rfs_RecvFrom(buf, MAXBUFSIZE);
 			
 			printf("Recv message size: %d, ", (int)status);
 			if (isMessageSentByMe(buf))
@@ -120,13 +120,13 @@ void ServerInstance:: procOpenFileMessage(char *buf) {
 	openFileMessage.print();
 
 	if (isFileOpen) {
-		sendOpenFileAckMessage(0);
+		sendOpenFileAckMessage(1);
 		return;
 	}
 
 	std::string filename(openFileMessage.filename);
 	std::string fileFullname = mount + filename;
-	printf("Try to open file: %s\n", fileFullname.c_str());
+	
 	if (!isFileExist(fileFullname.c_str()))
 		fp = fopen(fileFullname.c_str(), "w+b");
 	else
@@ -134,10 +134,12 @@ void ServerInstance:: procOpenFileMessage(char *buf) {
 
 	if (!fp) {
 		isFileOpen = false;
+		printf("Create filename %s fail\n", fileFullname.c_str());
 		sendOpenFileAckMessage(-1);
 	} else {
 		isFileOpen = true;
-		sendOpenFileAckMessage(0);
+		printf("Create filename %s success\n", fileFullname.c_str());
+		sendOpenFileAckMessage(1);
 	}
 }
 
