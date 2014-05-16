@@ -27,6 +27,8 @@
 #include <stdlib.h>
 #include <string>
 #include <assert.h>
+
+#include <string>
 #include <vector>
 #include <set>
 #include <map>
@@ -123,11 +125,11 @@ public:
 
 class OpenFileMessage: public Message {
 public:
-	int fileId;
+	uint32_t fileId;
 	char filename[128];
 
 	OpenFileMessage() {}
-	OpenFileMessage(uint32_t nodeId, uint32_t seqNum, int fileId, char* filename): Message(OPENFILE, nodeId, seqNum) {
+	OpenFileMessage(uint32_t nodeId, uint32_t seqNum, uint32_t fileId, char* filename): Message(OPENFILE, nodeId, seqNum) {
 		this->fileId = fileId;
 		memset(this->filename, 0, 128);
 		memcpy(this->filename, filename, strlen(filename));
@@ -150,7 +152,7 @@ public:
 
 	void print() { 
 		Message::print();
-		printf("FileId: %u, Filename: %s\n", fileId, filename);
+		printf(" fileId: %u, filename: %s\n", fileId, filename);
 	}
 };
 
@@ -178,20 +180,20 @@ public:
 
 	void print() { 
 		Message::print();
-		printf("FileDesc: %d\n", fileDesc);
+		printf(" fileDesc: %d\n", fileDesc);
 	}
 };
 
 class WriteBlockMessage: public Message {
 public:
-	int fileId;
+	uint32_t fileId;
 	uint32_t updateId;
 	int byteOffset;
 	int blockSize;
 	char *buffer;
 
 	WriteBlockMessage() {}
-	WriteBlockMessage(uint32_t nodeId, uint32_t seqNum, int fileId, 
+	WriteBlockMessage(uint32_t nodeId, uint32_t seqNum, uint32_t fileId, 
 		uint32_t updateId, int byteOffset, int blockSize, char *buffer): Message(WRITEBLOCK, nodeId, seqNum) {
 		this->nodeId = nodeId;
 		this->seqNum = seqNum;
@@ -204,7 +206,7 @@ public:
 
 	void serialize(char *buf) {
 		Message::serialize(buf);
-		int msg_fileId = htonl(fileId);
+		uint32_t msg_fileId = htonl(fileId);
 		memcpy(buf + HEADER_SIZE, &msg_fileId, 4);
 		uint32_t msg_updateId = htonl(updateId);
 		memcpy(buf + HEADER_SIZE + 4, &msg_updateId, 4);
@@ -217,7 +219,7 @@ public:
 
 	void deserialize(char *buf) { 
 		Message::deserialize(buf);
-		int msg_fileId = 0;
+		uint32_t msg_fileId = 0;
 		memcpy(&msg_fileId, buf + HEADER_SIZE, 4);
 		fileId = ntohl(msg_fileId);
 		int msg_updateId = 0;
@@ -234,16 +236,16 @@ public:
 
 	void print() { 
 		Message::print();
-		printf("fileId: %d, updateId: %u, byteOffset: %d, blockSize: %d\n", fileId, updateId, byteOffset, blockSize);
+		printf(" fileId: %u, updateId: %u, byteOffset: %d, blockSize: %d\n", fileId, updateId, byteOffset, blockSize);
 	}
 };
 
 class CloseMessage: public Message {
 public:
-	int fileId;
+	uint32_t fileId;
 
 	CloseMessage() {}
-	CloseMessage(uint32_t nodeId, uint32_t seqNum, int fileId): Message(CLOSE, nodeId, seqNum){
+	CloseMessage(uint32_t nodeId, uint32_t seqNum, uint32_t fileId): Message(CLOSE, nodeId, seqNum){
 		this->fileId = fileId;
 	}
 
@@ -262,7 +264,7 @@ public:
 
 	void print() { 
 		Message::print();
-		printf("FileId: %u\n", fileId);
+		printf(" fileId: %u\n", fileId);
 	}
 };
 
@@ -290,7 +292,7 @@ public:
 
 	void print() { 
 		Message::print();
-		printf("FileDesc: %d\n", fileDesc);
+		printf(" fileDesc: %d\n", fileDesc);
 	}
 };
 
@@ -327,5 +329,6 @@ void getCurrentTime(struct timeval *tv);
 bool isTimeOut(struct timeval *curr, struct timeval *last, uint32_t millisecond);
 bool isDropPacket(int packetLoss);
 uint32_t getNextNum(uint32_t num);
+int isFileExist(const char *filename);
 
 #endif

@@ -37,6 +37,12 @@ uint32_t getNextNum(uint32_t num) {
 	}
 }
 
+int isFileExist(const char *filename) {
+    struct stat st;
+    int result = stat(filename, &st);
+    return result == 0;
+}
+
 NetworkInstance:: NetworkInstance(int packetLoss, uint32_t nodeId) {
 	this->packetLoss = packetLoss;
 	this->nodeId = nodeId;
@@ -151,7 +157,7 @@ void NetworkInstance:: sendMessage(Message *msg, int len) {
 	msg->serialize(buf);
 
 	ssize_t cc = rfs_SendTo(buf, len);
-	// printf("Send Message size: %d, ", (int)cc);
+	printf("Send Message size: %d, ", (int)cc);
 	msg->print();
 }
 

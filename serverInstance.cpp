@@ -14,6 +14,8 @@ int main(int argc, char *argv[]) {
 	unsigned short port = (unsigned short)atoi(argv[2]);
 	std::string mount(argv[4]);
 	int packetLoss = atoi(argv[6]);
+	if (mount[mount.size() - 1] != '/')
+		mount += '/';
 
 	srand(time(NULL));
 	uint32_t nodeId = (uint32_t)rand();
@@ -124,7 +126,12 @@ void ServerInstance:: procOpenFileMessage(char *buf) {
 
 	std::string filename(openFileMessage.filename);
 	std::string fileFullname = mount + filename;
-	fp = fopen(fileFullname.c_str(), "r+b");
+	printf("Try to open file: %s\n", fileFullname.c_str());
+	if (!isFileExist(fileFullname.c_str()))
+		fp = fopen(fileFullname.c_str(), "w+b");
+	else
+		fp = fopen(fileFullname.c_str(), "r+b");
+
 	if (!fp) {
 		isFileOpen = false;
 		sendOpenFileAckMessage(-1);

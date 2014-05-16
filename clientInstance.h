@@ -19,9 +19,9 @@ public:
 	void sendOpenFileMessage(uint32_t fileId, char* filename);
 	int procOpenFileAckMessage(char *buf, std::set<uint32_t> *recvServerId);
 
-	void sendWriteBlockMessage(int fileId, uint32_t updateId, int byteOffset, int blockSize, char *buffer);
+	void sendWriteBlockMessage(uint32_t fileId, uint32_t updateId, int byteOffset, int blockSize, char *buffer);
 
-	void sendCloseMessage(int fileId);
+	void sendCloseMessage(uint32_t fileId);
 	int procCloseAckMessage(char *buf, std::set<uint32_t> *recvServerId);
 };
 

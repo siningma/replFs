@@ -65,7 +65,7 @@ int ClientInstance:: procOpenFileAckMessage(char *buf, std::set<uint32_t> *recvS
 	}
 }
 
-void ClientInstance:: sendWriteBlockMessage(int fileId, uint32_t updateId, int byteOffset, int blockSize, char *buffer) {
+void ClientInstance:: sendWriteBlockMessage(uint32_t fileId, uint32_t updateId, int byteOffset, int blockSize, char *buffer) {
 	WriteBlockMessage writeBlockMsg(nodeId, msgSeqNum, fileId, updateId, byteOffset, blockSize, buffer);
 	msgSeqNum = getNextNum(msgSeqNum);
 
@@ -75,12 +75,12 @@ void ClientInstance:: sendWriteBlockMessage(int fileId, uint32_t updateId, int b
 	update.buffer = new char[blockSize];
 	memset(update.buffer, 0, blockSize);
 	memcpy(update.buffer, buffer, blockSize);
-	
+
 	updateMap.insert(std::make_pair(updateId, update));
 	sendMessage(&writeBlockMsg, HEADER_SIZE + 16 + blockSize);
 }
 
-void ClientInstance:: sendCloseMessage(int fileId) {
+void ClientInstance:: sendCloseMessage(uint32_t fileId) {
 	CloseMessage closeMsg(nodeId, msgSeqNum, fileId);
 	msgSeqNum = getNextNum(msgSeqNum);
 	
