@@ -49,17 +49,30 @@ ServerInstance:: ServerInstance(int packetLoss, uint32_t nodeId, std::string mou
 void ServerInstance:: execute() {
 	while(1) {
 		if (rfs_IsRecvPacket()) {
-
 			char buf[MAXBUFSIZE];
 			memset(buf, 0, MAXBUFSIZE);
 
 			ssize_t status = rfs_RecvFrom(buf, MAXBUFSIZE);
-			
-			printf("Recv message size: %d, ", (int)status);
-			if (isMessageSentByMe(buf))
-				continue;
 
 			if (status > 0) {
+				if (status < HEADER_SIZE)
+                        continue;
+
+				#ifdef DEBUG
+					unsigned char msgType = buf[0];
+					uint32_t msg_nodeId = 0;
+					memcpy(&msg_nodeId, buf + 2, 4);
+					msg_nodeId = ntohl(msg_nodeId);
+					uint32_t msg_seqNum = 0;
+					memcpy(&msg_seqNum, buf + 6, 4);
+					msg_seqNum = ntohl(msg_seqNum);
+					printf("Server receive one message msgType: 0x%02x, nodeId: %010u, 
+						msgSeqNum: %u\n\n", msgType, msg_nodeId, msg_seqNum);
+				#endif
+
+				if (isMessageSentByMe(buf))
+					continue;
+
 				unsigned char msgType = buf[0];
 
 				if (isDropPacket(packetLoss)) {
@@ -67,6 +80,7 @@ void ServerInstance:: execute() {
 					continue;
 				}
 
+				printf("Recv message size: %d, ", (int)status);
 				switch(msgType) {
 					case INIT:
 					{
@@ -110,7 +124,7 @@ void ServerInstance:: sendOpenFileAckMessage(int fileDesc) {
 	OpenFileAckMessage openFileAckMessage(nodeId, msgSeqNum, fileDesc);
 	msgSeqNum = getNextNum(msgSeqNum);
 
-	sendMessage(&openFileAckMessage, HEADER_SIZE);
+	sendMessage(&openFileAckMessage, HEADER_SIZE + 4);
 }
 
 void ServerInstance:: procOpenFileMessage(char *buf) {
@@ -120,7 +134,7 @@ void ServerInstance:: procOpenFileMessage(char *buf) {
 	openFileMessage.print();
 
 	if (isFileOpen) {
-		sendOpenFileAckMessage(1);
+		sendOpenFileAckMessage(0);
 		return;
 	}
 
@@ -139,7 +153,7 @@ void ServerInstance:: procOpenFileMessage(char *buf) {
 	} else {
 		isFileOpen = true;
 		printf("Create filename %s success\n", fileFullname.c_str());
-		sendOpenFileAckMessage(1);
+		sendOpenFileAckMessage(0);
 	}
 }
 
@@ -174,7 +188,7 @@ void ServerInstance:: sendCloseAckMessage(int fileDesc) {
 	CloseAckMessage closeAckMessage(nodeId, msgSeqNum, fileDesc);
 	msgSeqNum = getNextNum(msgSeqNum);
 
-	sendMessage(&closeAckMessage, HEADER_SIZE);
+	sendMessage(&closeAckMessage, HEADER_SIZE + 4);
 }
 
 void ServerInstance:: procCloseMessage(char *buf) {

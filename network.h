@@ -62,6 +62,8 @@
 #define CLIENT_NODE 	0
 #define SERVER_NODE 	1
 
+#define MAXBUFSIZE 1024
+
 typedef	struct sockaddr_in			Sockaddr;
 
 class Message {

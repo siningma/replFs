@@ -10,8 +10,6 @@
 
 #include "network.h"
 
-#define MAXBUFSIZE 650
-
 class ServerInstance: public NetworkInstance {
 public:
 	std::string mount;

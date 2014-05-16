@@ -164,7 +164,5 @@ void NetworkInstance:: sendMessage(Message *msg, int len) {
 bool NetworkInstance:: isMessageSentByMe(char *buf) {
 	uint32_t msg_nodeId = 0;
 	memcpy(&msg_nodeId, buf + 2, 4);
-	unsigned char msgType = buf[0];
-	printf("Match msgType: 0x%02x, nodeId: %010u\n", msgType, msg_nodeId);
 	return this->nodeId == ntohl(msg_nodeId);
 }

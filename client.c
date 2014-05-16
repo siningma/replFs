@@ -56,17 +56,25 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
         if (isTimeOut(&now, &first, SHORT_TIMEOUT)) {
               break;
         } else {
-            char buf[HEADER_SIZE];
-            memset(buf, 0, HEADER_SIZE);
-
             if (client->rfs_IsRecvPacket()) {
-                int status = client->rfs_RecvFrom(buf, HEADER_SIZE);
-                printf("Recv message size: %d, ", (int)status);
-
-                if (client->isMessageSentByMe(buf))
-                    continue;
+                char buf[MAXBUFSIZE];
+                memset(buf, 0, MAXBUFSIZE);
+                int status = client->rfs_RecvFrom(buf, MAXBUFSIZE);
 
                 if (status > 0) {
+                    if (status < HEADER_SIZE)
+                        continue;
+
+                    if (client->isMessageSentByMe(buf))
+                        continue;
+
+                    unsigned char msgType = buf[0];
+                    if (isDropPacket(client->packetLoss)) {
+                        printf("Drop Message: Recv Message: MsgType: 0x%02x\n", msgType);
+                        continue;
+                    }
+
+                    printf("Recv message size: %d, ", (int)status);
                     client->procInitAckMessage(buf);
                 }
             }
@@ -116,23 +124,25 @@ OpenFile( char * fileName ) {
         if (isTimeOut(&now, &first, LONG_TIMEOUT)) {
               break;
         } else {
-            char buf[HEADER_SIZE + 4];
-            memset(buf, 0, HEADER_SIZE + 4);
-
             if (client->rfs_IsRecvPacket()) {
-                int status = client->rfs_RecvFrom(buf, HEADER_SIZE + 4);
-
-                unsigned char msgType = buf[0];
-                if (isDropPacket(client->packetLoss)) {
-                    printf("Drop Message: Recv Message: MsgType: 0x%02x\n", msgType);
-                    continue;
-                }
-
-                if (client->isMessageSentByMe(buf))
-                    continue;
-             
-                printf("Recv message size: %d, ", (int)status);
+                char buf[MAXBUFSIZE];
+                memset(buf, 0, MAXBUFSIZE);
+                int status = client->rfs_RecvFrom(buf, MAXBUFSIZE);
+                
                 if (status > 0) {
+                    if (status < HEADER_SIZE)
+                        continue;
+
+                    if (client->isMessageSentByMe(buf))
+                        continue;
+
+                    unsigned char msgType = buf[0];
+                    if (isDropPacket(client->packetLoss)) {
+                        printf("Drop Message: Recv Message: MsgType: 0x%02x\n", msgType);
+                        continue;
+                    }
+
+                    printf("Recv message size: %d, ", (int)status);
                     int ret = client->procOpenFileAckMessage(buf, &recvServerId);
                     if (ret == -1)
                         return ( ErrorReturn );
@@ -258,23 +268,25 @@ CloseFile( int fd ) {
         if (isTimeOut(&now, &first, SHORT_TIMEOUT)) {
               break;
         } else {
-            char buf[HEADER_SIZE];
-            memset(buf, 0, HEADER_SIZE);
-
             if (client->rfs_IsRecvPacket()) {
-                int status = client->rfs_RecvFrom(buf, HEADER_SIZE);
-                unsigned char msgType = buf[0];
-                if (isDropPacket(client->packetLoss)) {
-                    printf("Drop Message: Recv Message: MsgType: 0x%02x\n", msgType);
-                    continue;
-                }
-
-                printf("Recv message size: %d, ", (int)status);
-
-                if (client->isMessageSentByMe(buf))
-                    continue;
+                char buf[MAXBUFSIZE];
+                memset(buf, 0, MAXBUFSIZE);
+                int status = client->rfs_RecvFrom(buf, MAXBUFSIZE);
 
                 if (status > 0) {
+                    if (status < HEADER_SIZE)
+                        continue;
+
+                    if (client->isMessageSentByMe(buf))
+                        continue;
+
+                    unsigned char msgType = buf[0];
+                    if (isDropPacket(client->packetLoss)) {
+                        printf("Drop Message: Recv Message: MsgType: 0x%02x\n", msgType);
+                        continue;
+                    }
+
+                    printf("Recv message size: %d, ", (int)status);
                     if (client->procCloseAckMessage(buf, &recvServerId) == -1) {
                         return(ErrorReturn);
                     } 
