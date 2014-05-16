@@ -66,8 +66,7 @@ void ServerInstance:: execute() {
 					uint32_t msg_seqNum = 0;
 					memcpy(&msg_seqNum, buf + 6, 4);
 					msg_seqNum = ntohl(msg_seqNum);
-					printf("Server receive one message msgType: 0x%02x, nodeId: %010u, 
-						msgSeqNum: %u\n\n", msgType, msg_nodeId, msg_seqNum);
+					printf("Server receive one message msgType: 0x%02x, nodeId: %010u, msgSeqNum: %u\n\n", msgType, msg_nodeId, msg_seqNum);
 				#endif
 
 				if (isMessageSentByMe(buf))
