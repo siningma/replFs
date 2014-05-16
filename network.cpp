@@ -151,7 +151,7 @@ void NetworkInstance:: sendMessage(Message *msg, int len) {
 	msg->serialize(buf);
 
 	ssize_t cc = rfs_SendTo(buf, len);
-	printf("Send Message size: %d, ", (int)cc);
+	// printf("Send Message size: %d, ", (int)cc);
 	msg->print();
 }
 

@@ -59,6 +59,7 @@ int ClientInstance:: procOpenFileAckMessage(char *buf, std::set<uint32_t> *recvS
 		// message id can be found in serverIds set, but not in recvServerId set
 		if (iter != serverIds.end() && it == recvServerId->end()) { 
 			recvServerId->insert(openFileAckMessage.nodeId);
+			printf("Recv OpenFileAck Message from server: %010u\n", openFileAckMessage.nodeId);
 		}
 		return 0;
 	}
@@ -71,7 +72,10 @@ void ClientInstance:: sendWriteBlockMessage(int fileId, uint32_t updateId, int b
 	Update update;
 	update.byteOffset = byteOffset;
 	update.blockSize = blockSize;
+	update.buffer = new char[blockSize];
+	memset(update.buffer, 0, blockSize);
 	memcpy(update.buffer, buffer, blockSize);
+	
 	updateMap.insert(std::make_pair(updateId, update));
 	sendMessage(&writeBlockMsg, HEADER_SIZE + 16 + blockSize);
 }

@@ -12,21 +12,21 @@ int main(int argc, char *argv[]) {
 		RFSError("Invalid command. Example: replFsServer -port 4137 -mount /folder1/fs244b -drop 3");
 
 	unsigned short port = (unsigned short)atoi(argv[2]);
-	char *filePath = argv[4];
+	std::string mount(argv[4]);
 	int packetLoss = atoi(argv[6]);
 
 	srand(time(NULL));
 	uint32_t nodeId = (uint32_t)rand();
 
-	printf("Server port: %u, filePath: %s, packetLoss: %d, nodeId: %010u\n", port, filePath, packetLoss, nodeId);
-	ServerInstance *server = new ServerInstance(packetLoss, nodeId, filePath);
+	printf("Server port: %u, mount: %s, packetLoss: %d, nodeId: %010u\n", port, mount.c_str(), packetLoss, nodeId);
+	ServerInstance *server = new ServerInstance(packetLoss, nodeId, mount.c_str());
 
-	int err = mkdir(filePath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	int err = mkdir(mount.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	if (err == -1) {
 		if (errno == EEXIST) {
 			RFSError("machine already in use");
 		} else {
-			RFSError("create filepath directory error");
+			RFSError("create mount directory error");
 		}
 	}
 
@@ -37,11 +37,8 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-ServerInstance:: ServerInstance(int packetLoss, uint32_t nodeId, char* filePath): NetworkInstance(packetLoss, nodeId) {
-	int len = strlen(filePath) + 1;
-	this->filePath = new char[len];
-	memset(this->filePath, 0, len);
-	memcpy(this->filePath, filePath, len);
+ServerInstance:: ServerInstance(int packetLoss, uint32_t nodeId, std::string mount): NetworkInstance(packetLoss, nodeId) {
+	this->mount = mount;
 	this->nodeType = SERVER_NODE;
 	this->isFileOpen = false;
 	this->latestValidUpdateId = 0;
@@ -125,8 +122,9 @@ void ServerInstance:: procOpenFileMessage(char *buf) {
 		return;
 	}
 
-	char *fileFullname = strcat(filePath, openFileMessage.filename);
-	fp = fopen(fileFullname, "r+b");
+	std::string filename(openFileMessage.filename);
+	std::string fileFullname = mount + filename;
+	fp = fopen(fileFullname.c_str(), "r+b");
 	if (!fp) {
 		isFileOpen = false;
 		sendOpenFileAckMessage(-1);
@@ -146,7 +144,10 @@ void ServerInstance:: procWriteBlockMessage(char *buf) {
 		Update update;
 		update.byteOffset = writeBlockMessage.byteOffset;
 		update.blockSize = writeBlockMessage.blockSize;
+		update.buffer = new char[writeBlockMessage.blockSize];
+		memset(update.buffer, 0, writeBlockMessage.blockSize);
 		memcpy(update.buffer, writeBlockMessage.buffer, writeBlockMessage.blockSize);
+		
 		updateMap.insert(std::make_pair(writeBlockMessage.updateId, update));
 	}
 

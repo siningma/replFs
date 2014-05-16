@@ -128,11 +128,10 @@ OpenFile( char * fileName ) {
                     continue;
                 }
 
-                printf("Recv message size: %d, ", (int)status);
-
                 if (client->isMessageSentByMe(buf))
                     continue;
-
+             
+                printf("Recv message size: %d, ", (int)status);
                 if (status > 0) {
                     int ret = client->procOpenFileAckMessage(buf, &recvServerId);
                     if (ret == -1)
@@ -145,8 +144,9 @@ OpenFile( char * fileName ) {
     if ((int)recvServerId.size() != client->numServers)
         return ( ErrorReturn );
     else {
+        int fd = client->fd;
         client->fd = getNextNum(client->fd);
-        return( client->fd );
+        return( fd );
     }
 }
 
