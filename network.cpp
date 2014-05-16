@@ -129,14 +129,17 @@ bool NetworkInstance:: rfs_IsRecvPacket() {
 	if (ret == -1) {
 		perror("select()");
 		return false;
-	} else if (!ret) {
+	} else {
+		return FD_ISSET(sockfd, &fdmask);
+	}
+	/*
+	else if (!ret) {
 		if (nodeType == SERVER_NODE)
 			printf("Server receives no data in 5 seconds\n");
 
 		return false;
-	} else {
-		return FD_ISSET(sockfd, &fdmask);
 	}
+	*/
 }
 
 ssize_t NetworkInstance:: rfs_RecvFrom(char* buf, int length) {
