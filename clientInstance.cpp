@@ -10,11 +10,11 @@
 ClientInstance:: ClientInstance(int packetLoss, uint32_t nodeId, int numServers): NetworkInstance(packetLoss, nodeId) {
 	this->numServers = numServers;
 	this->nodeType = CLIENT_NODE;
-	this->fd = 0;
+	this->nextFd = 0;
 	this->updateId = 0;
 }
 
-int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvServerId, char *fileName) {
+int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvServerId, uint32_t fd, char *fileName) {
 	struct timeval first;
     struct timeval last;
     struct timeval now;
@@ -31,6 +31,15 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
         		case OPEN_OP:
         		sendOpenFileMessage(fd, fileName);
         		break;
+        		case VOTE_OP:
+        		sendVoteMessage(fd);
+                break;
+                case COMMIT_OP:
+                sendCommitMessage(fd);
+                break;
+                case ABORT_OP:
+                sendAbortMessage(fd);
+                break;
         		case CLOSE_OP:
         		sendCloseMessage(fd);
         		break;
@@ -68,14 +77,24 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
                     	procInitAckMessage(buf);
                     	break;
                     	case OPEN_OP:
-                    	if (procOpenFileAckMessage(buf, recvServerId) == -1) {
+                    	if (procOpenFileAckMessage(buf, recvServerId) == -1)
                     		return ( ErrorReturn );
-                    	}
+                        break;
+                        case VOTE_OP:
+                        if (procVoteAckMessage(buf, recvServerId, fd) == -1)
+                        	return (ErrorReturn);
+                        break;
+                        case COMMIT_OP:
+                        if (procCommitAckMessage(buf, recvServerId) == -1)
+                        	return (ErrorReturn);
+                        break;
+                        case ABORT_OP:
+                        if (procAbortAckMessage(buf, recvServerId) == -1) 
+                        	return (ErrorReturn);
                         break;
                         case CLOSE_OP:
-                        if (procCloseAckMessage(buf, recvServerId) == -1) {
+                        if (procCloseAckMessage(buf, recvServerId) == -1)
                         	return ( ErrorReturn );
-                    	} 
                     	break;
                     	default:
                     	break;
@@ -139,19 +158,114 @@ int ClientInstance:: procOpenFileAckMessage(char *buf, std::set<uint32_t> *recvS
 	}
 }
 
-void ClientInstance:: sendWriteBlockMessage(uint32_t fileId, uint32_t updateId, int byteOffset, int blockSize, char *buffer) {
+void ClientInstance:: sendWriteBlockMessage(uint32_t fileId, uint32_t updateId, int byteOffset, int blockSize, char *buffer, int isStore) {
 	WriteBlockMessage writeBlockMsg(nodeId, msgSeqNum, fileId, updateId, byteOffset, blockSize, buffer);
 	msgSeqNum = getNextNum(msgSeqNum);
 
-	Update update;
-	update.byteOffset = byteOffset;
-	update.blockSize = blockSize;
-	update.buffer = new char[blockSize];
-	memset(update.buffer, 0, blockSize);
-	memcpy(update.buffer, buffer, blockSize);
+	if (isStore) {
+		Update update;
+		update.byteOffset = byteOffset;
+		update.blockSize = blockSize;
+		update.buffer = new char[blockSize];
+		memset(update.buffer, 0, blockSize);
+		memcpy(update.buffer, buffer, blockSize);
 
-	updateMap.insert(std::make_pair(updateId, update));
+		updateMap.insert(std::make_pair(updateId, update));
+	}
+
 	sendMessage(&writeBlockMsg, HEADER_SIZE + 16 + blockSize);
+}
+
+void ClientInstance:: sendVoteMessage(uint32_t fileId) {
+	VoteMessage voteMsg(nodeId, msgSeqNum, fileId);
+	msgSeqNum = getNextNum(msgSeqNum);
+
+	sendMessage(&voteMsg, HEADER_SIZE + 4);
+}
+
+int ClientInstance:: procVoteAckMessage(char *buf, std::set<uint32_t> *recvServerId, uint32_t fd) {
+	VoteAckMessage voteAckMessage;
+	voteAckMessage.deserialize(buf);
+
+	voteAckMessage.print();
+
+	if (voteAckMessage.fileDesc < 0)
+		return -1;
+	else {
+		// find the smallest update id
+		uint32_t smallestUpdateId = 0;
+
+		// do retransmission
+		if ((int)recvServerId->size() == numServers) {
+			if (smallestUpdateId == updateId)
+				return 0;	// ready to commit
+
+			for (uint32_t i = smallestUpdateId; i < updateId; i++) {
+				std::map<uint32_t, Update>::iterator it = updateMap.find(i);
+				int byteOffset = it->second.byteOffset;
+				int blockSize = it->second.blockSize;
+				char *buffer = it->second.buffer;
+
+				sendWriteBlockMessage(fd, i, byteOffset, blockSize, buffer, 0);
+			}
+			return 1;	// need to send vote again
+		} else
+			return -1;
+	}
+}
+
+void ClientInstance:: sendCommitMessage(uint32_t fileId) {
+	CommitMessage commitMsg(nodeId, msgSeqNum, fileId);
+	msgSeqNum = getNextNum(msgSeqNum);
+
+	sendMessage(&commitMsg, HEADER_SIZE + 4);
+}
+
+int ClientInstance:: procCommitAckMessage(char *buf, std::set<uint32_t> *recvServerId) {
+	CommitAckMessage commitAckMessage;
+	commitAckMessage.deserialize(buf);
+
+	commitAckMessage.print();
+
+	if (commitAckMessage.fileDesc < 0)
+		return -1;
+	else {
+		std::set<uint32_t>::iterator it = recvServerId->find(commitAckMessage.nodeId);
+		std::set<uint32_t>::iterator iter = serverIds.find(commitAckMessage.nodeId);
+
+		// message id can be found in serverIds set, but not in recvServerId set
+		if (iter != serverIds.end() && it == recvServerId->end()) { 
+			recvServerId->insert(commitAckMessage.nodeId);
+		}
+		return 0;
+	}
+}
+
+void ClientInstance:: sendAbortMessage(uint32_t fileId) {
+	AbortMessage abortMsg(nodeId, msgSeqNum, fileId);
+	msgSeqNum = getNextNum(msgSeqNum);
+
+	sendMessage(&abortMsg, HEADER_SIZE + 4);
+}
+
+int ClientInstance:: procAbortAckMessage(char *buf, std::set<uint32_t> *recvServerId) {
+	AbortAckMessage abortAckMessage;
+	abortAckMessage.deserialize(buf);
+
+	abortAckMessage.print();
+
+	if (abortAckMessage.fileDesc < 0)
+		return -1;
+	else {
+		std::set<uint32_t>::iterator it = recvServerId->find(abortAckMessage.nodeId);
+		std::set<uint32_t>::iterator iter = serverIds.find(abortAckMessage.nodeId);
+
+		// message id can be found in serverIds set, but not in recvServerId set
+		if (iter != serverIds.end() && it == recvServerId->end()) { 
+			recvServerId->insert(abortAckMessage.nodeId);
+		}
+		return 0;
+	}
 }
 
 void ClientInstance:: sendCloseMessage(uint32_t fileId) {

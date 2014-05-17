@@ -43,7 +43,7 @@ ServerInstance:: ServerInstance(int packetLoss, uint32_t nodeId, std::string mou
 	this->mount = mount;
 	this->nodeType = SERVER_NODE;
 	this->isFileOpen = false;
-	this->latestValidUpdateId = 0;
+	this->nextUpdateId = 0;
 }
 
 void ServerInstance:: execute() {
@@ -82,19 +82,26 @@ void ServerInstance:: execute() {
 				printf("Recv message size: %d, ", (int)status);
 				switch(msgType) {
 					case INIT:
-					{
-						procInitMessage(buf);
-						break;
-					}
+					procInitMessage(buf);
+					break;
 					case OPENFILE:
-					{
-						procOpenFileMessage(buf);
-						break;
-					}
+					procOpenFileMessage(buf);
+					break;
+					case WRITEBLOCK:
+					procWriteBlockMessage(buf);
+					break;
+					case VOTE:
+					procVoteMessage(buf);
+					break;
+					case COMMIT:
+					procCommitMessage(buf);
+					break;
+					case ABORT:
+					procAbortMessage(buf);
+					break;
 					case CLOSE:
-					{
-						procCloseMessage(buf);
-					}
+					procCloseMessage(buf);
+					break;
 					default:
 					break;
 				}
@@ -172,15 +179,89 @@ void ServerInstance:: procWriteBlockMessage(char *buf) {
 		
 		updateMap.insert(std::make_pair(writeBlockMessage.updateId, update));
 	}
+}
 
-	// for (uint32_t i = 0;;i++)
-	// 	std::map<uint32_t, Update>::iterator iter = updateMap.find(i);
-	// 	if (iter == updateMap.end()) {
-	// 		break;
-	// 	} else {
-	// 		latestValidUpdateId = i;
-	// 	}
-	// }
+void ServerInstance:: sendVoteAckMessage(int fileDesc, uint32_t updateId) {
+	VoteAckMessage voteAckMessage(nodeId, msgSeqNum, fileDesc, updateId);
+	msgSeqNum = getNextNum(msgSeqNum);
+
+	sendMessage(&voteAckMessage, HEADER_SIZE + 8);
+}
+
+void ServerInstance:: procVoteMessage(char *buf) {
+	VoteMessage voteMsg;
+	voteMsg.deserialize(buf);
+
+	voteMsg.print();
+
+	while(1) {
+		std::map<uint32_t, Update>::iterator it = updateMap.find(nextUpdateId);
+		if (it == updateMap.end())	// cannot found in memory
+			break;
+		else	// found in memory
+			++nextUpdateId;
+	}
+
+	sendVoteAckMessage(0, nextUpdateId);
+}
+
+void ServerInstance:: sendCommitAckMessage(int fileDesc) {
+	CommitAckMessage commitAckMessage(nodeId, msgSeqNum, fileDesc);
+	msgSeqNum = getNextNum(msgSeqNum);
+
+	sendMessage(&commitAckMessage, HEADER_SIZE + 4);
+}
+
+void ServerInstance:: procCommitMessage(char *buf) {
+	CommitMessage commitMsg;
+	commitMsg.deserialize(buf);
+
+	commitMsg.print();
+
+	// write from memory to the file
+	for (uint32_t i = 0; i < nextUpdateId; i++) {
+		std::map<uint32_t, Update>::iterator it = updateMap.find(i);
+
+		int byteOffset = it->second.byteOffset;
+		int blockSize = it->second.blockSize;
+		char *buffer = it->second.buffer;
+
+		// TODO: seek and write
+	}
+
+	// delete memory
+	for (std::map<uint32_t, Update>::iterator it = updateMap.begin(); it != updateMap.end(); ++it) {
+		char *buff = it->second.buffer;
+		delete[] buff;
+	}
+	updateMap.clear();
+	nextUpdateId = 0;
+
+	sendCommitAckMessage(0);
+}
+
+void ServerInstance:: sendAbortAckMessage(int fileDesc) {
+	AbortAckMessage abortAckMessage(nodeId, msgSeqNum, fileDesc);
+	msgSeqNum = getNextNum(msgSeqNum);
+
+	sendMessage(&abortAckMessage, HEADER_SIZE + 4);
+}
+
+void ServerInstance:: procAbortMessage(char *buf) {
+	AbortMessage abortMsg;
+	abortMsg.deserialize(buf);
+
+	abortMsg.print();
+
+	// delete memory
+	for (std::map<uint32_t, Update>::iterator it = updateMap.begin(); it != updateMap.end(); ++it) {
+		char *buff = it->second.buffer;
+		delete[] buff;
+	}
+	updateMap.clear();
+	nextUpdateId = 0;
+
+	sendAbortAckMessage(0);
 }
 
 void ServerInstance:: sendCloseAckMessage(int fileDesc) {

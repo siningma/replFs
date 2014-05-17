@@ -40,14 +40,14 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
 
     client->rfs_NetInit(portNum);
 
-    client->execute(INIT_OP, SHORT_TIMEOUT, NULL, NULL); 
+    client->execute(INIT_OP, SHORT_TIMEOUT, NULL, 0, NULL); 
 
-    printf("Receive serverId count: %d\n", (int)client->serverIds.size());
+    printf("\nReceive serverId count: %d\n", (int)client->serverIds.size());
     printf("Server Ids: ");
     for (std::set<uint32_t>::iterator it = client->serverIds.begin(); it != client->serverIds.end(); ++it) {
         printf("%010u, ", *it);
     }
-    printf("\n");
+    printf("\n\n");
 
     if ((int)client->serverIds.size() < numServers)
         return ( ErrorReturn );
@@ -62,20 +62,20 @@ OpenFile( char * fileName ) {
     ASSERT( fileName );
 
     if (fileName == NULL || strlen(fileName) >= MAXFILENAMESIZE)
-        return -1;
+        return ErrorReturn;
 
 #ifdef DEBUG
     printf( "OpenFile: Opening File '%s'\n", fileName );
 #endif
+    int fd = client->nextFd;
+    client->nextFd = getNextNum(client->nextFd);
 
     std::set<uint32_t> recvServerId;
-    client->execute(OPEN_OP, LONG_TIMEOUT, &recvServerId, fileName);
+    client->execute(OPEN_OP, LONG_TIMEOUT, &recvServerId, fd, fileName);
     
     if ((int)recvServerId.size() != client->numServers)
         return ( ErrorReturn );
     else {
-        int fd = client->fd;
-        client->fd = getNextNum(client->fd);
         return( fd );
     }
 }
@@ -93,12 +93,12 @@ WriteBlock( int fd, char * buffer, int byteOffset, int blockSize ) {
     ASSERT( blockSize >= 0 && blockSize < MaxBlockLength );
 
     if (fd < 0 || byteOffset < 0 || buffer == NULL || blockSize < 0 || blockSize >= MaxBlockLength)
-        return -1;
+        return ErrorReturn;
 
 #ifdef DEBUG
     printf( "WriteBlock: Writing FD=%d, Offset=%d, Length=%d\n", fd, byteOffset, blockSize );
 #endif
-    client->sendWriteBlockMessage(fd, client->updateId, byteOffset, blockSize, buffer);
+    client->sendWriteBlockMessage(fd, client->updateId, byteOffset, blockSize, buffer, 1);
     client->updateId = getNextNum(client->updateId);
 
     // if ( lseek( fd, byteOffset, SEEK_SET ) < 0 ) {
@@ -129,13 +129,29 @@ Commit( int fd ) {
   	/* Prepare to Commit Phase			    */
   	/* - Check that all writes made it to the server(s) */
   	/****************************************************/
+    std::set<uint32_t> recvVoteServerId;
+    while(1) {
+        int ret = client->execute(VOTE_OP, LONG_TIMEOUT, &recvVoteServerId, fd, NULL);
+
+        if (ret < 0) {
+            // error happens on servers, abort all file updates
+            Abort(fd);
+            return (ErrorReturn);
+        } else if (ret == 0)
+            break;
+    }
 
   	/****************/
   	/* Commit Phase */
   	/****************/
+    std::set<uint32_t> recvCommitServerId;
+    client->execute(COMMIT_OP, LONG_TIMEOUT, &recvCommitServerId, fd, NULL);
+    client->updateId = 0;
 
-    return( NormalReturn );
-
+    if ((int)recvCommitServerId.size() != client->numServers)
+        return ( ErrorReturn );
+    else
+        return (NormalReturn);
 }
 
 /* ------------------------------------------------------------------ */
@@ -152,8 +168,14 @@ Abort( int fd )
     /*************************/
     /* Abort the transaction */
     /*************************/
+    std::set<uint32_t> recvServerId;
+    client->execute(ABORT_OP, LONG_TIMEOUT, &recvServerId, fd, NULL);
+    client->updateId = 0;
 
-    return(NormalReturn);
+    if ((int)recvServerId.size() != client->numServers)
+        return ( ErrorReturn );
+    else
+        return (NormalReturn);
 }
 
 /* ------------------------------------------------------------------ */
@@ -170,18 +192,15 @@ CloseFile( int fd ) {
   	/*****************************/
   	/* Check for Commit or Abort */
   	/*****************************/
+    // TODO:
+
     std::set<uint32_t> recvServerId;
-    client->execute(CLOSE_OP, SHORT_TIMEOUT, &recvServerId, NULL);
+    client->execute(CLOSE_OP, SHORT_TIMEOUT, &recvServerId, fd, NULL);
 
     if ((int)recvServerId.size() != client->numServers)
         return ( ErrorReturn );
-    else {
-        return(NormalReturn);
-    }
+    else
+        return (NormalReturn);
 }
 
 /*  ------------------------------------------------------------------ */
-
-
-
-

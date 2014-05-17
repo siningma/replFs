@@ -242,6 +242,181 @@ public:
 	}
 };
 
+class VoteMessage: public Message {
+public:
+	uint32_t fileId;
+
+	VoteMessage() {}
+	VoteMessage(uint32_t nodeId, uint32_t seqNum, uint32_t fileId): Message(VOTE, nodeId, seqNum){
+		this->fileId = fileId;
+	}
+
+	void serialize(char *buf) {
+		Message::serialize(buf);
+		uint32_t msg_fileId = htonl(fileId);
+		memcpy(buf + HEADER_SIZE, &msg_fileId, 4);
+	}
+
+	void deserialize(char *buf) { 
+		Message::deserialize(buf);
+		uint32_t msg_fileId = 0;
+		memcpy(&msg_fileId, buf + HEADER_SIZE, 4);
+		fileId = ntohl(msg_fileId);
+	}
+
+	void print() { 
+		Message::print();
+		printf(" fileId: %u\n", fileId);
+	}
+};
+
+class VoteAckMessage: public Message {
+public:
+	int fileDesc;
+	uint32_t updateId;
+
+	VoteAckMessage() {}
+	VoteAckMessage(uint32_t nodeId, uint32_t seqNum, int fileDesc, uint32_t updateId): Message(VOTE, nodeId, seqNum){
+		this->fileDesc = fileDesc;
+		this->updateId = updateId;
+	}
+
+	void serialize(char *buf) {
+		Message::serialize(buf);
+		int msg_fileDesc = htonl(fileDesc);
+		memcpy(buf + HEADER_SIZE, &msg_fileDesc, 4);
+		uint32_t msg_updateId = htonl(updateId);
+		memcpy(buf + HEADER_SIZE + 4, &msg_updateId, 4);
+	}
+
+	void deserialize(char *buf) { 
+		Message::deserialize(buf);
+		int msg_fileDesc = 0;
+		memcpy(&msg_fileDesc, buf + HEADER_SIZE, 4);
+		fileDesc = ntohl(msg_fileDesc);
+		uint32_t msg_updateId = 0;
+		memcpy(&msg_updateId, buf + HEADER_SIZE + 4, 4);
+		updateId = ntohl(msg_updateId);
+	}
+
+	void print() { 
+		Message::print();
+		printf(" fileDesc: %d, updateId: %u\n", fileDesc, updateId);
+	}
+};
+
+class CommitMessage: public Message {
+public:
+	uint32_t fileId;
+
+	CommitMessage() {}
+	CommitMessage(uint32_t nodeId, uint32_t seqNum, uint32_t fileId): Message(COMMIT, nodeId, seqNum){
+		this->fileId = fileId;
+	}
+
+	void serialize(char *buf) {
+		Message::serialize(buf);
+		uint32_t msg_fileId = htonl(fileId);
+		memcpy(buf + HEADER_SIZE, &msg_fileId, 4);
+	}
+
+	void deserialize(char *buf) { 
+		Message::deserialize(buf);
+		uint32_t msg_fileId = 0;
+		memcpy(&msg_fileId, buf + HEADER_SIZE, 4);
+		fileId = ntohl(msg_fileId);
+	}
+
+	void print() { 
+		Message::print();
+		printf(" fileId: %u\n", fileId);
+	}
+};
+
+class CommitAckMessage: public Message {
+public:
+	int fileDesc;
+
+	CommitAckMessage() {}
+	CommitAckMessage(uint32_t nodeId, uint32_t seqNum, int fileDesc): Message(COMMITACK, nodeId, seqNum) {
+		this->fileDesc = fileDesc;
+	}
+
+	void serialize(char *buf) {
+		Message::serialize(buf);
+		int msg_fileDesc = htonl(fileDesc);
+		memcpy(buf + HEADER_SIZE, &msg_fileDesc, 4);
+	}
+
+	void deserialize(char *buf) { 
+		Message::deserialize(buf);
+		int msg_fileDesc = 0;
+		memcpy(&msg_fileDesc, buf + HEADER_SIZE, 4);
+		fileDesc = ntohl(msg_fileDesc);
+	}
+
+	void print() { 
+		Message::print();
+		printf(" fileDesc: %d\n", fileDesc);
+	}
+};
+
+class AbortMessage: public Message {
+public:
+	uint32_t fileId;
+
+	AbortMessage() {}
+	AbortMessage(uint32_t nodeId, uint32_t seqNum, uint32_t fileId): Message(ABORT, nodeId, seqNum){
+		this->fileId = fileId;
+	}
+
+	void serialize(char *buf) {
+		Message::serialize(buf);
+		uint32_t msg_fileId = htonl(fileId);
+		memcpy(buf + HEADER_SIZE, &msg_fileId, 4);
+	}
+
+	void deserialize(char *buf) { 
+		Message::deserialize(buf);
+		uint32_t msg_fileId = 0;
+		memcpy(&msg_fileId, buf + HEADER_SIZE, 4);
+		fileId = ntohl(msg_fileId);
+	}
+
+	void print() { 
+		Message::print();
+		printf(" fileId: %u\n", fileId);
+	}
+};
+
+class AbortAckMessage: public Message {
+public:
+	int fileDesc;
+
+	AbortAckMessage() {}
+	AbortAckMessage(uint32_t nodeId, uint32_t seqNum, int fileDesc): Message(ABORTACK, nodeId, seqNum) {
+		this->fileDesc = fileDesc;
+	}
+
+	void serialize(char *buf) {
+		Message::serialize(buf);
+		int msg_fileDesc = htonl(fileDesc);
+		memcpy(buf + HEADER_SIZE, &msg_fileDesc, 4);
+	}
+
+	void deserialize(char *buf) { 
+		Message::deserialize(buf);
+		int msg_fileDesc = 0;
+		memcpy(&msg_fileDesc, buf + HEADER_SIZE, 4);
+		fileDesc = ntohl(msg_fileDesc);
+	}
+
+	void print() { 
+		Message::print();
+		printf(" fileDesc: %d\n", fileDesc);
+	}
+};
+
 class CloseMessage: public Message {
 public:
 	uint32_t fileId;
@@ -260,7 +435,7 @@ public:
 	void deserialize(char *buf) { 
 		Message::deserialize(buf);
 		uint32_t msg_fileId = 0;
-		memcpy(&msg_fileId, buf + 2, 4);
+		memcpy(&msg_fileId, buf + HEADER_SIZE, 4);
 		fileId = ntohl(msg_fileId);
 	}
 
@@ -288,7 +463,7 @@ public:
 	void deserialize(char *buf) { 
 		Message::deserialize(buf);
 		int msg_fileDesc = 0;
-		memcpy(&msg_fileDesc, buf + 2, 4);
+		memcpy(&msg_fileDesc, buf + HEADER_SIZE, 4);
 		fileDesc = ntohl(msg_fileDesc);
 	}
 
