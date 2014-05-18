@@ -189,29 +189,35 @@ int ClientInstance:: procVoteAckMessage(char *buf, std::set<uint32_t> *recvServe
 
 	voteAckMessage.print();
 
-	if (voteAckMessage.fileDesc < 0)
-		return -1;
-	else {
-		// find the smallest update id
-		uint32_t smallestUpdateId = 0;
+	// // rewrite this part of code
+	// if (voteAckMessage.fileDesc < 0)
+	// 	return -1;
+	// else {
+	// 	// find the smallest update id
+	// 	if ((int)voteAckUpdateIdMap.size() != numServers) {
 
-		// do retransmission
-		if ((int)recvServerId->size() == numServers) {
-			if (smallestUpdateId == updateId)
-				return 0;	// ready to commit
+	// 	} else {
+	// 		uint32_t smallestUpdateId = 0;
 
-			for (uint32_t i = smallestUpdateId; i < updateId; i++) {
-				std::map<uint32_t, Update>::iterator it = updateMap.find(i);
-				int byteOffset = it->second.byteOffset;
-				int blockSize = it->second.blockSize;
-				char *buffer = it->second.buffer;
+	// 	// do retransmission
+	// 		if ((int)recvServerId->size() == numServers) {
+	// 			if (smallestUpdateId == updateId)
+	// 				return 0;	// ready to commit
 
-				sendWriteBlockMessage(fd, i, byteOffset, blockSize, buffer, 0);
-			}
-			return 1;	// need to send vote again
-		} else
-			return -1;
-	}
+	// 			for (uint32_t i = smallestUpdateId; i < updateId; i++) {
+	// 				std::map<uint32_t, Update>::iterator it = updateMap.find(i);
+	// 				int byteOffset = it->second.byteOffset;
+	// 				int blockSize = it->second.blockSize;
+	// 				char *buffer = it->second.buffer;
+
+	// 				sendWriteBlockMessage(fd, i, byteOffset, blockSize, buffer, 0);
+	// 			}
+	// 			return 1;	// need to send vote again
+	// 		}
+	// 	} else
+	// 		return -1;
+	// }
+	return 0;
 }
 
 void ClientInstance:: sendCommitMessage(uint32_t fileId) {

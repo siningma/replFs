@@ -24,6 +24,7 @@ public:
 	uint32_t nextFd;
 	uint32_t updateId;	// client total update count in one commit
 	std::map<uint32_t, Update> updateMap;
+	std::map<uint32_t, uint32_t> voteAckUpdateIdMap;
 
 	ClientInstance(int packetLoss, uint32_t nodeId, int numServers);
 
