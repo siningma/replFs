@@ -143,10 +143,11 @@ bool NetworkInstance:: rfs_IsRecvPacket() {
 }
 
 ssize_t NetworkInstance:: rfs_RecvFrom(char* buf, int length) {
-	socklen_t fromLen = sizeof(Sockaddr);
+    sockaddr fromAddr;
+    socklen_t fromLen = sizeof(fromAddr);
 
 	ssize_t cc = recvfrom(sockfd, buf, length, 0, 
-		(struct sockaddr *)&groupAddr, &fromLen);
+		(struct sockaddr *)&fromAddr, &fromLen);
 	
 	if (cc < 0 && errno != EINTR)
 		perror("event recvfrom");
