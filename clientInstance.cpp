@@ -84,11 +84,9 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
                         case VOTE_OP:
                         {
                         	int ret = procVoteAckMessage(buf, recvServerId, fd);
-	                        if (ret == -1)
+	                        if (ret == -1)	// Error happens on servers
 	                        	return (ErrorReturn);
-	                        else if (ret == 0)
-	                        	return 0;
-	                        else 
+	                        else if (ret == 1)	// need to do retransmission
 	                        	return 1;
                     	}
                         case COMMIT_OP:
@@ -188,7 +186,7 @@ int ClientInstance:: procOpenFileAckMessage(char *buf, std::set<uint32_t> *recvS
 		// message id can be found in serverIds set, but not in recvServerId set
 		if (iter != serverIds.end() && it == recvServerId->end()) { 
 			recvServerId->insert(openFileAckMessage.nodeId);
-			printf("Recv OpenFileAck Message from server: %010u\n", openFileAckMessage.nodeId);
+			// printf("Recv OpenFileAck Message from server: %010u\n", openFileAckMessage.nodeId);
 		}
 		return 0;
 	}
@@ -238,6 +236,7 @@ int ClientInstance:: procVoteAckMessage(char *buf, std::set<uint32_t> *recvServe
 			if (smallestUpdateId == updateId)
 				return 0;	// ready to commit
 
+            printf("Retransmit file update from updateId: %u\n", smallestUpdateId);
 			for (uint32_t i = smallestUpdateId; i < updateId; i++) {
 				std::map<uint32_t, Update>::iterator it = updateMap.find(i);
 				int byteOffset = it->second.byteOffset;
