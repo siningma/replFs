@@ -113,6 +113,7 @@ Commit( int fd ) {
   	/* Prepare to Commit Phase			    */
   	/* - Check that all writes made it to the server(s) */
   	/****************************************************/
+    printf("Client Vote phase...\n");
     std::set<uint32_t> recvVoteServerId;
     while(1) {
         int ret = client->execute(VOTE_OP, LONG_TIMEOUT, &recvVoteServerId, fd, NULL);
@@ -127,6 +128,7 @@ Commit( int fd ) {
   	/****************/
   	/* Commit Phase */
   	/****************/
+    printf("Client Commit phase...\n");
     std::set<uint32_t> recvCommitServerId;
     if (client->execute(COMMIT_OP, LONG_TIMEOUT, &recvCommitServerId, fd, NULL) == ErrorReturn)
         return ErrorReturn;

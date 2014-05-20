@@ -89,6 +89,7 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
 	                        else if (ret == 1)	// need to do retransmission
 	                        	return 1;
                     	}
+                    	break;
                         case COMMIT_OP:
                         if (procCommitAckMessage(buf, recvServerId) == -1)
                         	return (ErrorReturn);
