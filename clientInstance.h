@@ -21,13 +21,16 @@ class ClientInstance : public NetworkInstance {
 public: 
 	int numServers;
 	std::set<uint32_t> serverIds;
+	
 	uint32_t nextFd;
 	uint32_t updateId;	// client total update count in one commit
 	std::map<uint32_t, Update> updateMap;
+	uint32_t smallestUpdateId;
 
 	ClientInstance(int packetLoss, uint32_t nodeId, int numServers);
 
 	int execute(int opCode, int timeout, std::set<uint32_t> *recvServerId, uint32_t fd, char *fileName);
+	void reset();
 
 	void sendInitMessage();
 	int procInitAckMessage(char *buf);

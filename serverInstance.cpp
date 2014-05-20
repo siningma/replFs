@@ -49,7 +49,7 @@ ServerInstance:: ServerInstance(int packetLoss, uint32_t nodeId, std::string mou
 void ServerInstance:: execute() {
 	while(1) {
 		bool isRecvPacket = rfs_IsRecvPacket();
-		printf("receive packets: %d\n", isRecvPacket);
+		// printf("receive packets: %d\n", isRecvPacket);
 
 		if (isRecvPacket) {
 			char buf[MAXBUFSIZE];
@@ -63,6 +63,7 @@ void ServerInstance:: execute() {
 
 				unsigned char msgType = buf[0];
 
+				/*
 				uint32_t msg_nodeId = 0;
 				memcpy(&msg_nodeId, buf + 2, 4);
 				msg_nodeId = ntohl(msg_nodeId);
@@ -70,6 +71,7 @@ void ServerInstance:: execute() {
 				memcpy(&msg_seqNum, buf + 6, 4);
 				msg_seqNum = ntohl(msg_seqNum);
 				printf("\nServer receive one message msgType: 0x%02x, nodeId: %010u, msgSeqNum: %u\n", msgType, msg_nodeId, msg_seqNum);
+				*/
 
 				if (isMessageSentByMe(buf))
 					continue;
@@ -110,6 +112,17 @@ void ServerInstance:: execute() {
 	}
 }
 
+void ServerInstance:: reset() {
+	// delete memory
+	for (std::map<uint32_t, Update>::iterator it = updateMap.begin(); it != updateMap.end(); ++it) {
+		char *buff = it->second.buffer;
+		delete[] buff;
+	}
+	updateMap.clear();
+	nextUpdateId = 0;
+	memset(backup, 0, MAXFILESIZE);
+}
+
 void ServerInstance:: sendInitAckMessage() {
 	InitAckMessage initAckMsg(nodeId, msgSeqNum);
 	msgSeqNum = getNextNum(msgSeqNum);
@@ -145,12 +158,16 @@ void ServerInstance:: procOpenFileMessage(char *buf) {
 	}
 
 	std::string filename(openFileMessage.filename);
-	std::string fileFullname = mount + filename;
+	fileFullname.clear();
+	fileFullname = mount + filename;
 	
 	if (!isFileExist(fileFullname.c_str()))
 		fp = fopen(fileFullname.c_str(), "w+b");
-	else
+	else {
 		fp = fopen(fileFullname.c_str(), "r+b");
+		memset(backup, 0, MAXFILESIZE);
+		fread(backup, sizeof(char), MAXFILESIZE, fp);
+	}
 
 	if (!fp) {
 		isFileOpen = false;
@@ -226,17 +243,20 @@ void ServerInstance:: procCommitMessage(char *buf) {
 		int blockSize = it->second.blockSize;
 		char *buffer = it->second.buffer;
 
-		// TODO: seek and write
+		// seek and write
+		if (fseek (fp, byteOffset, SEEK_SET) != 0) {
+			sendCommitAckMessage(-1);
+			return;
+		}
+
+		if (fwrite (buffer , sizeof(char), blockSize, fp) != blockSize) {
+			sendCommitAckMessage(-1);
+			return;
+		}
+		fflush(fp);
 	}
 
-	// delete memory
-	for (std::map<uint32_t, Update>::iterator it = updateMap.begin(); it != updateMap.end(); ++it) {
-		char *buff = it->second.buffer;
-		delete[] buff;
-	}
-	updateMap.clear();
-	nextUpdateId = 0;
-
+	reset();
 	sendCommitAckMessage(0);
 }
 
@@ -253,14 +273,17 @@ void ServerInstance:: procAbortMessage(char *buf) {
 
 	abortMsg.print();
 
-	// delete memory
-	for (std::map<uint32_t, Update>::iterator it = updateMap.begin(); it != updateMap.end(); ++it) {
-		char *buff = it->second.buffer;
-		delete[] buff;
+	if (remove(fileFullname.c_str()) != 0) {
+		sendAbortAckMessage(-1);
+		reset();
+		return;
 	}
-	updateMap.clear();
-	nextUpdateId = 0;
 
+	fp = fopen(fileFullname.c_str(), "w+b");
+	fwrite (backup , sizeof(char), MAXFILESIZE, fp);
+	fflush(fp);
+
+	reset();
 	sendAbortAckMessage(0);
 }
 

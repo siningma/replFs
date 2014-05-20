@@ -14,13 +14,17 @@ class ServerInstance: public NetworkInstance {
 public:
 	std::string mount;
 	FILE* fp;
+	std::string fileFullname;
 	bool isFileOpen;
+	char backup[MAXFILESIZE];
 	std::map<uint32_t, Update> updateMap;
 	uint32_t nextUpdateId;
 
 	ServerInstance(int packetLoss, uint32_t nodeId, std::string mount);
 
 	void execute();
+	void reset();
+
 	void sendInitAckMessage();
 	void procInitMessage(char *buf);
 

@@ -63,6 +63,7 @@
 #define SERVER_NODE 	1
 
 #define MAXBUFSIZE 1024
+#define MAXFILESIZE 1048576
 
 typedef	struct sockaddr_in			Sockaddr;
 

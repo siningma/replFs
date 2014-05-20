@@ -12,6 +12,7 @@ ClientInstance:: ClientInstance(int packetLoss, uint32_t nodeId, int numServers)
 	this->nodeType = CLIENT_NODE;
 	this->nextFd = 0;
 	this->updateId = 0;
+	this->smallestUpdateId = (uint32_t)~0;
 }
 
 int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvServerId, uint32_t fd, char *fileName) {
@@ -81,9 +82,15 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
                     		return ( ErrorReturn );
                         break;
                         case VOTE_OP:
-                        if (procVoteAckMessage(buf, recvServerId, fd) == -1)
-                        	return (ErrorReturn);
-                        break;
+                        {
+                        	int ret = procVoteAckMessage(buf, recvServerId, fd);
+	                        if (ret == -1)
+	                        	return (ErrorReturn);
+	                        else if (ret == 0)
+	                        	return 0;
+	                        else 
+	                        	return 1;
+                    	}
                         case COMMIT_OP:
                         if (procCommitAckMessage(buf, recvServerId) == -1)
                         	return (ErrorReturn);
@@ -98,13 +105,42 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
                     	break;
                     	default:
                     	break;
-                    }                    
+                    }  
+
+                    switch(opCode) {
+                    	case OPEN_OP:
+                    	case VOTE_OP:
+                    	case COMMIT_OP:
+                    	case ABORT_OP:
+                    	case CLOSE_OP:
+                    	if ((int)recvServerId->size() == numServers)
+                    		return NormalReturn;
+                    	break;
+                    	default:
+                    	break;
+                    }                  
                 }
             }
         }
     }
 
-    return (NormalReturn);
+    // copy & paste the logic of server count not enough timeout
+    if (recvServerId != NULL && (int)recvServerId->size() < numServers)
+        return ( ErrorReturn );
+    else
+    	return (NormalReturn);
+}
+
+void ClientInstance:: reset() {
+	// reset all, except numServers and serverIds
+	for (std::map<uint32_t, Update>::iterator it = updateMap.begin(); it != updateMap.end(); ++it) {
+		char *buff = it->second.buffer;
+		delete[] buff;
+	}
+	updateMap.clear();
+	updateId = 0;
+	nextFd = 0;
+	smallestUpdateId = (uint32_t)~0;
 }
 
 void ClientInstance:: sendInitMessage() {
@@ -189,34 +225,30 @@ int ClientInstance:: procVoteAckMessage(char *buf, std::set<uint32_t> *recvServe
 
 	voteAckMessage.print();
 
-	// // rewrite this part of code
-	// if (voteAckMessage.fileDesc < 0)
-	// 	return -1;
-	// else {
-	// 	// find the smallest update id
-	// 	if ((int)voteAckUpdateIdMap.size() != numServers) {
+	if (voteAckMessage.fileDesc < 0)
+		return -1;
+	else {
+		if (recvServerId->find(voteAckMessage.nodeId) == recvServerId->end()) {
+			recvServerId->insert(voteAckMessage.nodeId);	
+			smallestUpdateId = (smallestUpdateId > voteAckMessage.updateId)? voteAckMessage.updateId: smallestUpdateId;
+		}
 
-	// 	} else {
-	// 		uint32_t smallestUpdateId = 0;
+		// do retransmission
+		if ((int)recvServerId->size() == numServers) {
+			if (smallestUpdateId == updateId)
+				return 0;	// ready to commit
 
-	// 	// do retransmission
-	// 		if ((int)recvServerId->size() == numServers) {
-	// 			if (smallestUpdateId == updateId)
-	// 				return 0;	// ready to commit
+			for (uint32_t i = smallestUpdateId; i < updateId; i++) {
+				std::map<uint32_t, Update>::iterator it = updateMap.find(i);
+				int byteOffset = it->second.byteOffset;
+				int blockSize = it->second.blockSize;
+				char *buffer = it->second.buffer;
 
-	// 			for (uint32_t i = smallestUpdateId; i < updateId; i++) {
-	// 				std::map<uint32_t, Update>::iterator it = updateMap.find(i);
-	// 				int byteOffset = it->second.byteOffset;
-	// 				int blockSize = it->second.blockSize;
-	// 				char *buffer = it->second.buffer;
-
-	// 				sendWriteBlockMessage(fd, i, byteOffset, blockSize, buffer, 0);
-	// 			}
-	// 			return 1;	// need to send vote again
-	// 		}
-	// 	} else
-	// 		return -1;
-	// }
+				sendWriteBlockMessage(fd, i, byteOffset, blockSize, buffer, 0);
+			}
+			return 1;	// need to send vote again
+		}
+	}
 	return 0;
 }
 

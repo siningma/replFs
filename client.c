@@ -40,7 +40,8 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
 
     client->rfs_NetInit(portNum);
 
-    client->execute(INIT_OP, SHORT_TIMEOUT, NULL, 0, NULL); 
+    if (client->execute(INIT_OP, SHORT_TIMEOUT, NULL, 0, NULL) == ErrorReturn)
+        return ErrorReturn;
 
     printf("\nReceive serverId count: %d\n", (int)client->serverIds.size());
     printf("Server Ids: ");
@@ -49,10 +50,7 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
     }
     printf("\n\n");
 
-    if ((int)client->serverIds.size() < numServers)
-        return ( ErrorReturn );
-    else
-        return( NormalReturn ); 
+    return (NormalReturn);
 }
 
 /* ------------------------------------------------------------------ */
@@ -71,13 +69,10 @@ OpenFile( char * fileName ) {
     client->nextFd = getNextNum(client->nextFd);
 
     std::set<uint32_t> recvServerId;
-    client->execute(OPEN_OP, LONG_TIMEOUT, &recvServerId, fd, fileName);
-    
-    if ((int)recvServerId.size() != client->numServers)
-        return ( ErrorReturn );
-    else {
-        return( fd );
-    }
+    if (client->execute(OPEN_OP, LONG_TIMEOUT, &recvServerId, fd, fileName) == ErrorReturn)
+        return ErrorReturn;
+
+    return (NormalReturn);
 }
 
 /* ------------------------------------------------------------------ */
@@ -101,18 +96,7 @@ WriteBlock( int fd, char * buffer, int byteOffset, int blockSize ) {
     client->sendWriteBlockMessage(fd, client->updateId, byteOffset, blockSize, buffer, 1);
     client->updateId = getNextNum(client->updateId);
 
-    // if ( lseek( fd, byteOffset, SEEK_SET ) < 0 ) {
-    //     perror( "WriteBlock Seek" );
-    //     return(ErrorReturn);
-    // }
-
-    // if ( ( bytesWritten = write( fd, buffer, blockSize ) ) < 0 ) {
-    //     perror( "WriteBlock write" );
-    //     return(ErrorReturn);
-    // }
-
     return( fd );
-
 }
 
 /* ------------------------------------------------------------------ */
@@ -132,7 +116,6 @@ Commit( int fd ) {
     std::set<uint32_t> recvVoteServerId;
     while(1) {
         int ret = client->execute(VOTE_OP, LONG_TIMEOUT, &recvVoteServerId, fd, NULL);
-
         if (ret < 0) {
             // error happens on servers, abort all file updates
             Abort(fd);
@@ -145,13 +128,10 @@ Commit( int fd ) {
   	/* Commit Phase */
   	/****************/
     std::set<uint32_t> recvCommitServerId;
-    client->execute(COMMIT_OP, LONG_TIMEOUT, &recvCommitServerId, fd, NULL);
-    client->updateId = 0;
-
-    if ((int)recvCommitServerId.size() != client->numServers)
-        return ( ErrorReturn );
-    else
-        return (NormalReturn);
+    if (client->execute(COMMIT_OP, LONG_TIMEOUT, &recvCommitServerId, fd, NULL) == ErrorReturn)
+        return ErrorReturn;
+    
+    return (NormalReturn);
 }
 
 /* ------------------------------------------------------------------ */
@@ -169,13 +149,10 @@ Abort( int fd )
     /* Abort the transaction */
     /*************************/
     std::set<uint32_t> recvServerId;
-    client->execute(ABORT_OP, LONG_TIMEOUT, &recvServerId, fd, NULL);
-    client->updateId = 0;
+    if (client->execute(ABORT_OP, LONG_TIMEOUT, &recvServerId, fd, NULL) == ErrorReturn)
+        return ErrorReturn;
 
-    if ((int)recvServerId.size() != client->numServers)
-        return ( ErrorReturn );
-    else
-        return (NormalReturn);
+    return (NormalReturn);
 }
 
 /* ------------------------------------------------------------------ */
@@ -195,12 +172,10 @@ CloseFile( int fd ) {
     // TODO:
 
     std::set<uint32_t> recvServerId;
-    client->execute(CLOSE_OP, SHORT_TIMEOUT, &recvServerId, fd, NULL);
+    if (client->execute(CLOSE_OP, SHORT_TIMEOUT, &recvServerId, fd, NULL) == ErrorReturn)
+        return ErrorReturn;
 
-    if ((int)recvServerId.size() != client->numServers)
-        return ( ErrorReturn );
-    else
-        return (NormalReturn);
+    return (NormalReturn);
 }
 
 /*  ------------------------------------------------------------------ */
