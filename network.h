@@ -277,7 +277,7 @@ public:
 	uint32_t updateId;
 
 	VoteAckMessage() {}
-	VoteAckMessage(uint32_t nodeId, uint32_t seqNum, int fileDesc, uint32_t updateId): Message(VOTE, nodeId, seqNum){
+	VoteAckMessage(uint32_t nodeId, uint32_t seqNum, int fileDesc, uint32_t updateId): Message(VOTEACK, nodeId, seqNum){
 		this->fileDesc = fileDesc;
 		this->updateId = updateId;
 	}
