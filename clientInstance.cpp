@@ -122,7 +122,7 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
         }
     }
 
-    // copy & paste the logic of server count not enough timeout
+    // if one server is unavailable when receiving messages timeout, return error 
     if (recvServerId != NULL && (int)recvServerId->size() < numServers)
         return ( ErrorReturn );
     else 

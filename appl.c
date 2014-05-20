@@ -48,29 +48,29 @@ main() {
   /* Write incrementing numbers to the file */
   /**************************************/
 
-//   for ( loopCnt=0; loopCnt<128; loopCnt++ ) {
-//     sprintf( strData, "%d\n", loopCnt );
+  for ( loopCnt=0; loopCnt<128; loopCnt++ ) {
+    sprintf( strData, "%d\n", loopCnt );
 
-// #ifdef DEBUG
-//     printf( "%d: Writing '%s' to file.\n", loopCnt, strData );
-// #endif
+#ifdef DEBUG
+    printf( "%d: Writing '%s' to file.\n", loopCnt, strData );
+#endif
 
-//     if ( WriteBlock( fd, strData, byteOffset, strlen( strData ) ) < 0 ) {
-//       printf( "Error writing to file %s [LoopCnt=%d]\n", fileName, loopCnt );
-//       return( ErrorExit );
-//     }
-//     byteOffset += strlen( strData );
+    if ( WriteBlock( fd, strData, byteOffset, strlen( strData ) ) < 0 ) {
+      printf( "Error writing to file %s [LoopCnt=%d]\n", fileName, loopCnt );
+      return( ErrorExit );
+    }
+    byteOffset += strlen( strData );
     
-//   }
+  }
 
 
   /**********************************************/
   /* Can we commit the writes to the server(s)? */
   /**********************************************/
-  // if ( Commit( fd ) < 0 ) {
-  //   printf( "Could not commit changes to File '%s'\n", fileName );
-  //   return( ErrorExit );
-  // }
+  if ( Commit( fd ) < 0 ) {
+    printf( "Could not commit changes to File '%s'\n", fileName );
+    return( ErrorExit );
+  }
 
   /**************************************/
   /* Close the writes to the server(s) */
@@ -80,7 +80,7 @@ main() {
       return( ErrorExit );
   }
 
-  // // printf( "Writes to file '%s' complete.\n", fileName );
+  printf( "Writes to file '%s' complete.\n", fileName );
   return( NormalExit );
 }
 
