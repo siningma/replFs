@@ -249,7 +249,7 @@ void ServerInstance:: procCommitMessage(char *buf) {
 			return;
 		}
 
-		if (fwrite (buffer , sizeof(char), blockSize, fp) != blockSize) {
+		if ((int)fwrite (buffer , sizeof(char), blockSize, fp) != blockSize) {
 			sendCommitAckMessage(-1);
 			return;
 		}

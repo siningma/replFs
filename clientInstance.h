@@ -21,7 +21,7 @@ class ClientInstance : public NetworkInstance {
 public: 
 	int numServers;
 	std::set<uint32_t> serverIds;
-	
+
 	uint32_t nextFd;
 	uint32_t updateId;	// client total update count in one commit
 	std::map<uint32_t, Update> updateMap;

@@ -127,7 +127,7 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
     // copy & paste the logic of server count not enough timeout
     if (recvServerId != NULL && (int)recvServerId->size() < numServers)
         return ( ErrorReturn );
-    else
+    else 
     	return (NormalReturn);
 }
 
