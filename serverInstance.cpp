@@ -81,27 +81,33 @@ void ServerInstance:: execute() {
 					continue;
 				}
 
-				printf("Recv message size: %d, ", (int)status);
 				switch(msgType) {
 					case INIT:
+					printf("Recv message size: %d, ", (int)status);
 					procInitMessage(buf);
 					break;
 					case OPENFILE:
+					printf("Recv message size: %d, ", (int)status);
 					procOpenFileMessage(buf);
 					break;
 					case WRITEBLOCK:
+					printf("Recv message size: %d, ", (int)status);
 					procWriteBlockMessage(buf);
 					break;
 					case VOTE:
+					printf("Recv message size: %d, ", (int)status);
 					procVoteMessage(buf);
 					break;
 					case COMMIT:
+					printf("Recv message size: %d, ", (int)status);
 					procCommitMessage(buf);
 					break;
 					case ABORT:
+					printf("Recv message size: %d, ", (int)status);
 					procAbortMessage(buf);
 					break;
 					case CLOSE:
+					printf("Recv message size: %d, ", (int)status);
 					procCloseMessage(buf);
 					break;
 					default:
