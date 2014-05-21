@@ -32,6 +32,7 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <limits>
 
 #ifndef	TRUE
 #define	TRUE		1

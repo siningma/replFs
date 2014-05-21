@@ -12,7 +12,6 @@ ClientInstance:: ClientInstance(int packetLoss, uint32_t nodeId, int numServers)
 	this->nodeType = CLIENT_NODE;
 	this->nextFd = 0;
 	this->updateId = 0;
-	this->smallestUpdateId = (uint32_t)~0;
 }
 
 int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvServerId, uint32_t fd, char *fileName) {
@@ -69,6 +68,14 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
                     unsigned char msgType = buf[0];
                     if (isDropPacket(packetLoss)) {
                         printf("Drop Message: MsgType: 0x%02x\n", msgType);
+					
+						uint32_t msg_nodeId = 0;
+						memcpy(&msg_nodeId, buf + 2, 4);
+						msg_nodeId = ntohl(msg_nodeId);
+						uint32_t msg_seqNum = 0;
+						memcpy(&msg_seqNum, buf + 6, 4);
+						msg_seqNum = ntohl(msg_seqNum);
+						printf("nodeId: %010u, msgSeqNum: %u\n", msg_nodeId, msg_seqNum);
                         continue;
                     }
 
@@ -138,7 +145,7 @@ void ClientInstance:: reset() {
 	}
 	updateMap.clear();
 	updateId = 0;
-	smallestUpdateId = (uint32_t)~0;
+	recvServerUpdateId.clear();
 }
 
 void ClientInstance:: sendInitMessage() {
@@ -226,17 +233,36 @@ int ClientInstance:: procVoteAckMessage(char *buf, std::set<uint32_t> *recvServe
 	if (voteAckMessage.fileDesc < 0)
 		return -1;
 	else {
-		if (recvServerId->find(voteAckMessage.nodeId) == recvServerId->end()) {
-			recvServerId->insert(voteAckMessage.nodeId);	
-			smallestUpdateId = (smallestUpdateId > voteAckMessage.updateId)? voteAckMessage.updateId: smallestUpdateId;
+		std::set<uint32_t>::iterator it = recvServerId->find(voteAckMessage.nodeId);
+		std::set<uint32_t>::iterator iter = serverIds.find(voteAckMessage.nodeId);
+
+		// message id can be found in serverIds set, but not in recvServerId set
+		if (iter != serverIds.end() && it == recvServerId->end()) { 
+			recvServerId->insert(voteAckMessage.nodeId);
 		}
 
-		// do retransmission
-		if ((int)recvServerId->size() == numServers) {
-			if (smallestUpdateId == updateId)
-				return 0;	// ready to commit
+		// update receive servers updateId
+		std::map<uint32_t, uint32_t>::iterator iterUpdateId = recvServerUpdateId.find(voteAckMessage.nodeId);
+		if (iterUpdateId == recvServerUpdateId.end())
+			recvServerUpdateId.insert(std::make_pair(voteAckMessage.nodeId, voteAckMessage.updateId));
+		else
+			iterUpdateId->second = voteAckMessage.updateId;
 
-            printf("Retransmit file update from updateId: %u\n", smallestUpdateId);
+		// check if retransmission is needed
+		if ((int)recvServerId->size() == numServers) {
+			uint32_t smallestUpdateId = std::numeric_limits<uint32_t>::max();
+
+			for (std::map<uint32_t, uint32_t>::iterator itTemp = recvServerUpdateId.begin(); itTemp != recvServerUpdateId.end(); ++itTemp) {
+				if (smallestUpdateId > itTemp->second)
+					smallestUpdateId = itTemp->second;
+			}
+
+			if (smallestUpdateId == updateId) {
+				printf("Servers receive all updates till updateId: %u\n", updateId);
+				return 0;
+			}
+
+            printf("Client retransmit file updates from updateId: %u\n", smallestUpdateId);
 			for (uint32_t i = smallestUpdateId; i < updateId; i++) {
 				std::map<uint32_t, Update>::iterator it = updateMap.find(i);
 				int byteOffset = it->second.byteOffset;

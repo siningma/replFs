@@ -25,7 +25,7 @@ public:
 	uint32_t nextFd;	// next file id, a monotonically increasing number
 	uint32_t updateId;	// client total update count in one commit
 	std::map<uint32_t, Update> updateMap;
-	uint32_t smallestUpdateId;
+	std::map<uint32_t, uint32_t> recvServerUpdateId;
 
 	ClientInstance(int packetLoss, uint32_t nodeId, int numServers);
 

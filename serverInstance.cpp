@@ -11,6 +11,9 @@ int main(int argc, char *argv[]) {
 	if (argc != 7)
 		RFSError("Invalid command. Example: replFsServer -port 4137 -mount /folder1/fs244b -drop 3");
 
+	uint32_t num = std::numeric_limits<uint32_t>::max();
+	printf("max: %u\n", num);
+
 	unsigned short port = (unsigned short)atoi(argv[2]);
 	std::string mount(argv[4]);
 	int packetLoss = atoi(argv[6]);
@@ -63,21 +66,19 @@ void ServerInstance:: execute() {
 
 				unsigned char msgType = buf[0];
 
-				/*
-				uint32_t msg_nodeId = 0;
-				memcpy(&msg_nodeId, buf + 2, 4);
-				msg_nodeId = ntohl(msg_nodeId);
-				uint32_t msg_seqNum = 0;
-				memcpy(&msg_seqNum, buf + 6, 4);
-				msg_seqNum = ntohl(msg_seqNum);
-				printf("\nServer receive one message msgType: 0x%02x, nodeId: %010u, msgSeqNum: %u\n", msgType, msg_nodeId, msg_seqNum);
-				*/
-
 				if (isMessageSentByMe(buf))
 					continue;
 
 				if (isDropPacket(packetLoss)) {
-					printf("Drop Message: MsgType: 0x%02x\n", msgType);
+					printf("Drop Message: MsgType: 0x%02x, ", msgType);
+					
+					uint32_t msg_nodeId = 0;
+					memcpy(&msg_nodeId, buf + 2, 4);
+					msg_nodeId = ntohl(msg_nodeId);
+					uint32_t msg_seqNum = 0;
+					memcpy(&msg_seqNum, buf + 6, 4);
+					msg_seqNum = ntohl(msg_seqNum);
+					printf("nodeId: %010u, msgSeqNum: %u\n", msg_nodeId, msg_seqNum);
 					continue;
 				}
 
