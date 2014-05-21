@@ -68,7 +68,7 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
 
                     unsigned char msgType = buf[0];
                     if (isDropPacket(packetLoss)) {
-                        printf("Drop Message: Recv Message: MsgType: 0x%02x\n", msgType);
+                        printf("Drop Message: MsgType: 0x%02x\n", msgType);
                         continue;
                     }
 
@@ -138,7 +138,6 @@ void ClientInstance:: reset() {
 	}
 	updateMap.clear();
 	updateId = 0;
-	nextFd = 0;
 	smallestUpdateId = (uint32_t)~0;
 }
 

@@ -77,7 +77,7 @@ void ServerInstance:: execute() {
 					continue;
 
 				if (isDropPacket(packetLoss)) {
-					printf("Drop Message: Recv Message: MsgType: 0x%02x\n", msgType);
+					printf("Drop Message: MsgType: 0x%02x\n", msgType);
 					continue;
 				}
 
@@ -169,13 +169,11 @@ void ServerInstance:: procOpenFileMessage(char *buf) {
 	
 	if (!isFileExist(fileFullname.c_str()))
 		fp = fopen(fileFullname.c_str(), "w+b");
-	else {
+	else
 		fp = fopen(fileFullname.c_str(), "r+b");
-		memset(backup, 0, MAXFILESIZE);
-		fread(backup, sizeof(char), MAXFILESIZE, fp);
-	}
 
 	if (!fp) {
+		// fail to open file
 		isFileOpen = false;
 		printf("Create filename %s fail\n", fileFullname.c_str());
 		sendOpenFileAckMessage(-1);
@@ -225,6 +223,7 @@ void ServerInstance:: procVoteMessage(char *buf) {
 			++nextUpdateId;
 	}
 
+	printf("VoteAck server receives update till updateId: %u\n", nextUpdateId);
 	sendVoteAckMessage(0, nextUpdateId);
 }
 
@@ -240,6 +239,11 @@ void ServerInstance:: procCommitMessage(char *buf) {
 	commitMsg.deserialize(buf);
 
 	commitMsg.print();
+
+	printf("Server has all updates: %d\n", nextUpdateId == updateMap.size());
+	// create backup in case rollback the file
+	memset(backup, 0, MAXFILESIZE);
+	fread(backup, sizeof(char), MAXFILESIZE, fp);
 
 	// write from memory to the file
 	for (uint32_t i = 0; i < nextUpdateId; i++) {
@@ -280,12 +284,21 @@ void ServerInstance:: procAbortMessage(char *buf) {
 	abortMsg.print();
 
 	if (remove(fileFullname.c_str()) != 0) {
+		printf("Rollback delete filename %s fail\n", fileFullname.c_str());
 		sendAbortAckMessage(-1);
 		reset();
 		return;
 	}
 
 	fp = fopen(fileFullname.c_str(), "w+b");
+	if (!fp) {
+		// fail to open file in order to do rollback
+		printf("Rollback recreate filename %s fail\n", fileFullname.c_str());
+		sendAbortAckMessage(-1);
+		reset();
+		return;
+	}
+
 	fwrite (backup , sizeof(char), MAXFILESIZE, fp);
 	fflush(fp);
 

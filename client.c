@@ -72,7 +72,7 @@ OpenFile( char * fileName ) {
     if (client->execute(OPEN_OP, LONG_TIMEOUT, &recvServerId, fd, fileName) == ErrorReturn)
         return ErrorReturn;
 
-    return (NormalReturn);
+    return fd;
 }
 
 /* ------------------------------------------------------------------ */
