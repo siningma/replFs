@@ -11,9 +11,6 @@ int main(int argc, char *argv[]) {
 	if (argc != 7)
 		RFSError("Invalid command. Example: replFsServer -port 4137 -mount /folder1/fs244b -drop 3");
 
-	uint32_t num = std::numeric_limits<uint32_t>::max();
-	printf("max: %u\n", num);
-
 	unsigned short port = (unsigned short)atoi(argv[2]);
 	std::string mount(argv[4]);
 	int packetLoss = atoi(argv[6]);
@@ -241,7 +238,7 @@ void ServerInstance:: procCommitMessage(char *buf) {
 
 	commitMsg.print();
 
-	printf("Server has all updates: %d\n", nextUpdateId == updateMap.size());
+	printf("Server next updateId: %u, has all updates: %d\n", nextUpdateId, nextUpdateId == updateMap.size());
 	// create backup in case rollback the file
 	memset(backup, 0, MAXFILESIZE);
 	fread(backup, sizeof(char), MAXFILESIZE, fp);
