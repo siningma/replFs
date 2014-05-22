@@ -147,7 +147,7 @@ ssize_t NetworkInstance:: rfs_RecvFrom(char* buf, int length) {
 	return cc;
 }
 
-void NetworkInstance:: sendMessage(Message *msg, int len) {
+ssize_t NetworkInstance:: sendMessage(Message *msg, int len) {
 	char buf[len];
 	memset(buf, 0, len);
 	msg->serialize(buf);
@@ -157,6 +157,7 @@ void NetworkInstance:: sendMessage(Message *msg, int len) {
 		printf("Send Message size: %d, ", (int)cc);
 		msg->print();
 	#endif
+	return cc;
 }
 
 bool NetworkInstance:: isMessageSentByMe(char *buf) {

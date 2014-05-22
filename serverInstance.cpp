@@ -241,7 +241,7 @@ void ServerInstance:: procCommitMessage(char *buf) {
 
 	commitMsg.print();
 
-	printf("Commit phase: Server next updateId: %u, updateMap size: %u\n", nextUpdateId, updateMap.size());
+	printf("Commit phase: Server next updateId: %u, updateMap size: %d\n", nextUpdateId, (int)updateMap.size());
 
 	// write from memory to the file
 	for (uint32_t i = 0; i < nextUpdateId; i++) {
@@ -266,8 +266,9 @@ void ServerInstance:: procCommitMessage(char *buf) {
 		fflush(fp);
 	}
 
-	reset();
 	printf("Commit phase: update file till updateId: %u\n", nextUpdateId);
+
+	reset();
 	sendCommitAckMessage(0);
 }
 
@@ -293,7 +294,9 @@ void ServerInstance:: sendCloseAckMessage(int fileDesc) {
 	CloseAckMessage closeAckMessage(nodeId, msgSeqNum, fileDesc);
 	msgSeqNum = getNextNum(msgSeqNum);
 
-	sendMessage(&closeAckMessage, HEADER_SIZE + 4);
+	ssize_t cc = sendMessage(&closeAckMessage, HEADER_SIZE + 4);
+	printf("Send Message size: %d, ", (int)cc);
+	closeAckMessage.print();
 }
 
 void ServerInstance:: procCloseMessage(char *buf) {
@@ -316,8 +319,10 @@ void ServerInstance:: procCloseMessage(char *buf) {
 			isFileCloseSuccess = false;
 		}
 	} else {
-		if (isFileCloseSuccess)
+		if (isFileCloseSuccess) {
 			sendCloseAckMessage(0);
+			isFileOpen = false;
+		}
 		else
 			sendCloseAckMessage(-1);
 	}

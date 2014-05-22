@@ -494,7 +494,7 @@ public:
 	bool rfs_IsRecvPacket();
 	ssize_t rfs_RecvFrom(char* buf, int length);
 
-	void sendMessage(Message *msg, int len);
+	ssize_t sendMessage(Message *msg, int len);
 };
 
 typedef struct _Update {
