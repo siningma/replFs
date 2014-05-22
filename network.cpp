@@ -153,8 +153,10 @@ void NetworkInstance:: sendMessage(Message *msg, int len) {
 	msg->serialize(buf);
 
 	ssize_t cc = rfs_SendTo(buf, len);
-	printf("Send Message size: %d, ", (int)cc);
-	msg->print();
+	#ifdef _DEBUG_
+		printf("Send Message size: %d, ", (int)cc);
+		msg->print();
+	#endif
 }
 
 bool NetworkInstance:: isMessageSentByMe(char *buf) {
