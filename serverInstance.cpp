@@ -249,6 +249,8 @@ void ServerInstance:: procCommitMessage(char *buf) {
 	long fileSize = ftell(fp);
 	backup = new char[fileSize];
 	fread(backup, 1, fileSize, fp);
+
+	// commitFile flag is set to false if commit is done or abort errors or done
 	commitFile = true;
 
 	// write from memory to the file
@@ -327,7 +329,7 @@ void ServerInstance:: procAbortMessage(char *buf) {
 	// abort is done
 	commitFile = false;
 	reset();
-	printf("Abort phase: Server abort file updates ok\n");
+	printf("Abort phase: Server aborts file updates ok\n");
 	sendAbortAckMessage(0);
 }
 

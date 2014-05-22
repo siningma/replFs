@@ -153,10 +153,10 @@ ssize_t NetworkInstance:: sendMessage(Message *msg, int len) {
 	msg->serialize(buf);
 
 	ssize_t cc = rfs_SendTo(buf, len);
-	#ifdef _DEBUG_
+	//#ifdef _DEBUG_
 		printf("Send Message size: %d, ", (int)cc);
 		msg->print();
-	#endif
+	//#endif
 	return cc;
 }
 
