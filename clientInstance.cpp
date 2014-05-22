@@ -186,7 +186,7 @@ int ClientInstance:: procOpenFileAckMessage(char *buf, std::set<uint32_t> *recvS
 	openFileAckMessage.print();
 
 	if (openFileAckMessage.fileDesc < 0)
-		return -1;
+		return ErrorReturn;
 	else {
 		std::set<uint32_t>::iterator it = recvServerId->find(openFileAckMessage.nodeId);
 		std::set<uint32_t>::iterator iter = serverIds.find(openFileAckMessage.nodeId);
@@ -232,7 +232,7 @@ int ClientInstance:: procVoteAckMessage(char *buf, std::set<uint32_t> *recvServe
 	voteAckMessage.print();
 
 	if (voteAckMessage.fileDesc < 0)
-		return -1;
+		return ErrorReturn;
 	else {
 		std::set<uint32_t>::iterator it = recvServerId->find(voteAckMessage.nodeId);
 		std::set<uint32_t>::iterator iter = serverIds.find(voteAckMessage.nodeId);
@@ -292,7 +292,7 @@ int ClientInstance:: procCommitAckMessage(char *buf, std::set<uint32_t> *recvSer
 	commitAckMessage.print();
 
 	if (commitAckMessage.fileDesc < 0)
-		return -1;
+		return ErrorReturn;
 	else {
 		std::set<uint32_t>::iterator it = recvServerId->find(commitAckMessage.nodeId);
 		std::set<uint32_t>::iterator iter = serverIds.find(commitAckMessage.nodeId);
@@ -319,7 +319,7 @@ int ClientInstance:: procAbortAckMessage(char *buf, std::set<uint32_t> *recvServ
 	abortAckMessage.print();
 
 	if (abortAckMessage.fileDesc < 0)
-		return -1;
+		return ErrorReturn;
 	else {
 		std::set<uint32_t>::iterator it = recvServerId->find(abortAckMessage.nodeId);
 		std::set<uint32_t>::iterator iter = serverIds.find(abortAckMessage.nodeId);
@@ -346,7 +346,7 @@ int ClientInstance:: procCloseAckMessage(char *buf, std::set<uint32_t> *recvServ
 	closeAckMessage.print();
 
 	if (closeAckMessage.fileDesc < 0)
-		return -1;
+		return ErrorReturn;
 	else {
 		std::set<uint32_t>::iterator it = recvServerId->find(closeAckMessage.nodeId);
 		std::set<uint32_t>::iterator iter = serverIds.find(closeAckMessage.nodeId);
