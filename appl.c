@@ -49,7 +49,7 @@ main() {
   /**************************************/
 
   for ( loopCnt=0; loopCnt<128; loopCnt++ ) {
-    sprintf( strData, "%d\n", loopCnt );
+    sprintf( strData, "%d", loopCnt );
 
 #ifdef DEBUG
     printf( "%d: Writing '%s' to file.\n", loopCnt, strData );
