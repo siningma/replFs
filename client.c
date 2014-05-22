@@ -57,7 +57,6 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
 
 int
 OpenFile( char * fileName ) {
-    ASSERT( fileName );
 
     if (fileName == NULL || strlen(fileName) >= MAXFILENAMESIZE)
         return ErrorReturn;
@@ -72,6 +71,7 @@ OpenFile( char * fileName ) {
     if (client->execute(OPEN_OP, LONG_TIMEOUT, &recvServerId, fd, fileName) == ErrorReturn)
         return ErrorReturn;
 
+    client->isFileOpen = true;
     return fd;
 }
 
@@ -79,15 +79,17 @@ OpenFile( char * fileName ) {
 
 int
 WriteBlock( int fd, char * buffer, int byteOffset, int blockSize ) {
-    //char strError[64];
-    // int bytesWritten;
-
-    ASSERT( fd >= 0 );
-    ASSERT( byteOffset >= 0 );
-    ASSERT( buffer );
-    ASSERT( blockSize >= 0 && blockSize < MaxBlockLength );
-
-    if (fd < 0 || byteOffset < 0 || buffer == NULL || blockSize < 0 || blockSize >= MaxBlockLength)
+    if( fd < 0 )
+        return ErrorReturn;
+    if (fd != (client->nextFd - 1)) // check if passing open file fd
+        return ErrorReturn;
+    if ( byteOffset < 0 || byteOffset > MAXFILESIZE)
+        return ErrorReturn;
+    if ( buffer == NULL)
+        return ErrorReturn;
+    if ( blockSize < 0 || blockSize >= MaxBlockLength )
+        return ErrorReturn;
+    if (!client->isFileOpen)
         return ErrorReturn;
 
 #ifdef DEBUG
@@ -103,7 +105,12 @@ WriteBlock( int fd, char * buffer, int byteOffset, int blockSize ) {
 
 int
 Commit( int fd ) {
-    ASSERT( fd >= 0 );
+    if (fd < 0)
+        return ErrorReturn;
+    if (fd != (client->nextFd - 1)) // check if passing open file fd
+        return ErrorReturn;
+    if (!client->isFileOpen)
+        return ErrorReturn;
 
 #ifdef DEBUG
     printf( "Commit: FD=%d\n", fd );
@@ -130,8 +137,11 @@ Commit( int fd ) {
   	/****************/
     printf("Client Commit phase...\n");
     std::set<uint32_t> recvCommitServerId;
-    if (client->execute(COMMIT_OP, LONG_TIMEOUT, &recvCommitServerId, fd, NULL) == ErrorReturn)
+    if (client->execute(COMMIT_OP, LONG_TIMEOUT, &recvCommitServerId, fd, NULL) == ErrorReturn) {
+        printf("File commit error, rollback all updates in this commit\n");
+        Abort(fd);
         return ErrorReturn;
+    }
     
     return (NormalReturn);
 }
@@ -141,7 +151,12 @@ Commit( int fd ) {
 int
 Abort( int fd )
 {
-    ASSERT( fd >= 0 );
+    if (fd < 0)
+        return ErrorReturn;
+    if (fd != (client->nextFd - 1)) // check if passing open file fd
+        return ErrorReturn;
+    if (!client->isFileOpen)
+        return ErrorReturn;
 
 #ifdef DEBUG
     printf( "Abort: FD=%d\n", fd );
@@ -161,8 +176,12 @@ Abort( int fd )
 
 int
 CloseFile( int fd ) {
-
-    ASSERT( fd >= 0 );
+    if (fd < 0)
+        return ErrorReturn;
+    if (fd != (client->nextFd - 1)) // check if passing open file fd
+        return ErrorReturn;
+    if (!client->isFileOpen)
+        return ErrorReturn;
 
 #ifdef DEBUG
     printf( "Close: FD=%d\n", fd );
@@ -177,6 +196,7 @@ CloseFile( int fd ) {
     if (client->execute(CLOSE_OP, SHORT_TIMEOUT, &recvServerId, fd, NULL) == ErrorReturn)
         return ErrorReturn;
 
+    client->isFileOpen = false;
     return (NormalReturn);
 }
 

@@ -22,6 +22,7 @@ public:
 	int numServers;
 	std::set<uint32_t> serverIds;
 
+	bool isFileOpen;
 	uint32_t nextFd;	// next file id, a monotonically increasing number
 	uint32_t updateId;	// client total update count in one commit
 	std::map<uint32_t, Update> updateMap;

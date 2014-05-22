@@ -10,6 +10,7 @@
 ClientInstance:: ClientInstance(int packetLoss, uint32_t nodeId, int numServers): NetworkInstance(packetLoss, nodeId) {
 	this->numServers = numServers;
 	this->nodeType = CLIENT_NODE;
+	this->isFileOpen = false;
 	this->nextFd = 0;
 	this->updateId = 0;
 }
@@ -336,7 +337,10 @@ void ClientInstance:: sendCloseMessage(uint32_t fileId) {
 	CloseMessage closeMsg(nodeId, msgSeqNum, fileId);
 	msgSeqNum = getNextNum(msgSeqNum);
 	
-	sendMessage(&closeMsg, HEADER_SIZE + 4);
+	ssize_t cc = sendMessage(&closeMsg, HEADER_SIZE + 4);
+
+	printf("Send Message size: %d, ", (int)cc);
+	closeMsg.print();
 }
 
 int ClientInstance:: procCloseAckMessage(char *buf, std::set<uint32_t> *recvServerId) {

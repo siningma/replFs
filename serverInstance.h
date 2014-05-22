@@ -19,6 +19,8 @@ public:
 
 	std::map<uint32_t, Update> updateMap;
 	uint32_t nextUpdateId;
+	char *backup;
+	bool commitFile;	// if in commit file phase
 	bool isFileCloseSuccess;
 
 	ServerInstance(int packetLoss, uint32_t nodeId, std::string mount);

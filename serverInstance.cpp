@@ -44,6 +44,7 @@ ServerInstance:: ServerInstance(int packetLoss, uint32_t nodeId, std::string mou
 	this->nodeType = SERVER_NODE;
 	this->isFileOpen = false;
 	this->nextUpdateId = 0;
+	this->commitFile = false;
 	this->isFileCloseSuccess = false;
 }
 
@@ -243,6 +244,13 @@ void ServerInstance:: procCommitMessage(char *buf) {
 
 	printf("Commit phase: Server next updateId: %u, updateMap size: %d\n", nextUpdateId, (int)updateMap.size());
 
+	// before the first commit, do backup
+	fseek(fp, 0, SEEK_END);
+	long fileSize = ftell(fp);
+	backup = new char[fileSize];
+	fread(backup, 1, fileSize, fp);
+	commitFile = true;
+
 	// write from memory to the file
 	for (uint32_t i = 0; i < nextUpdateId; i++) {
 		std::map<uint32_t, Update>::iterator it = updateMap.find(i);
@@ -251,15 +259,17 @@ void ServerInstance:: procCommitMessage(char *buf) {
 		int blockSize = it->second.blockSize;
 		char *buffer = it->second.buffer;
 
-		// seek and write
+		// seek and write all updates to the file
 		if (fseek (fp, byteOffset, SEEK_SET) != 0) {
 			printf("Commit phase: fseek error on updateId: %u\n", i);
+			reset();
 			sendCommitAckMessage(-1);
 			return;
 		}
 
 		if ((int)fwrite (buffer , sizeof(char), blockSize, fp) != blockSize) {
 			printf("Commit phase: fwrite error on updateId: %u\n", i);
+			reset();
 			sendCommitAckMessage(-1);
 			return;
 		}
@@ -268,6 +278,8 @@ void ServerInstance:: procCommitMessage(char *buf) {
 
 	printf("Commit phase: update file till updateId: %u\n", nextUpdateId);
 
+	// commit is done
+	commitFile = false;
 	reset();
 	sendCommitAckMessage(0);
 }
@@ -285,8 +297,37 @@ void ServerInstance:: procAbortMessage(char *buf) {
 
 	abortMsg.print();
 
+	if (commitFile) {
+		// error happens during commit, rollback the file
+		if (remove(fileFullname.c_str()) != 0) {
+			printf("Rollback delete filename %s fail\n", fileFullname.c_str());
+			sendAbortAckMessage(-1);
+			commitFile = false;
+			delete[] backup;
+			reset();
+			return;
+		}
+
+		fp = fopen(fileFullname.c_str(), "w+b");
+		if (!fp) {
+			// fail to open file in order to do rollback
+			printf("Rollback recreate filename %s fail\n", fileFullname.c_str());
+			sendAbortAckMessage(-1);
+			commitFile = false;
+			delete[] backup;
+			reset();
+			return;
+		}
+
+		fwrite (backup , sizeof(char), sizeof(backup), fp);
+		fflush(fp);
+		delete[] backup;
+	}
+
+	// abort is done
+	commitFile = false;
 	reset();
-	printf("Abort phase: Server abort file update ok\n");
+	printf("Abort phase: Server abort file updates ok\n");
 	sendAbortAckMessage(0);
 }
 
