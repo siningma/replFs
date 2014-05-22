@@ -174,13 +174,13 @@ void ServerInstance:: procOpenFileMessage(char *buf) {
 		// open the file fail
 		isFileOpen = false;
 		isFileCloseSuccess = false;	
-		printf("Create filename %s fail\n", fileFullname.c_str());
+		printf("OpenFile phase: Create filename %s fail\n", fileFullname.c_str());
 		sendOpenFileAckMessage(-1);
 	} else {
 		// open the file successfully
 		isFileOpen = true;
 		isFileCloseSuccess = false;
-		printf("Create filename %s successful\n", fileFullname.c_str());
+		printf("OpenFile phase: Create filename %s successful\n", fileFullname.c_str());
 		sendOpenFileAckMessage(0);
 	}
 }
@@ -224,7 +224,7 @@ void ServerInstance:: procVoteMessage(char *buf) {
 			++nextUpdateId;
 	}
 
-	printf("VoteAck server receives update till updateId: %u\n", nextUpdateId);
+	printf("Vote phase: server receives update till updateId: %u\n", nextUpdateId);
 	sendVoteAckMessage(0, nextUpdateId);
 }
 
@@ -241,7 +241,7 @@ void ServerInstance:: procCommitMessage(char *buf) {
 
 	commitMsg.print();
 
-	printf("Server next updateId: %u, has all updates: %d\n", nextUpdateId, nextUpdateId == updateMap.size());
+	printf("Commit phase: Server next updateId: %u, updateMap size: %u\n", nextUpdateId, updateMap.size());
 
 	// write from memory to the file
 	for (uint32_t i = 0; i < nextUpdateId; i++) {
@@ -253,11 +253,13 @@ void ServerInstance:: procCommitMessage(char *buf) {
 
 		// seek and write
 		if (fseek (fp, byteOffset, SEEK_SET) != 0) {
+			printf("Commit phase: fseek error on updateId: %u\n", i);
 			sendCommitAckMessage(-1);
 			return;
 		}
 
 		if ((int)fwrite (buffer , sizeof(char), blockSize, fp) != blockSize) {
+			printf("Commit phase: fwrite error on updateId: %u\n", i);
 			sendCommitAckMessage(-1);
 			return;
 		}
@@ -265,6 +267,7 @@ void ServerInstance:: procCommitMessage(char *buf) {
 	}
 
 	reset();
+	printf("Commit phase: update file till updateId: %u\n", nextUpdateId);
 	sendCommitAckMessage(0);
 }
 
@@ -282,6 +285,7 @@ void ServerInstance:: procAbortMessage(char *buf) {
 	abortMsg.print();
 
 	reset();
+	printf("Abort phase: Server abort file update ok\n");
 	sendAbortAckMessage(0);
 }
 
@@ -301,11 +305,13 @@ void ServerInstance:: procCloseMessage(char *buf) {
 	if (isFileOpen == true) {
 		int ret = fclose(fp);
 		if (ret == 0) {
+			printf("Close phase: Server close file ok\n");
 			sendCloseAckMessage(0);
 			isFileCloseSuccess = true;
 			isFileOpen = false;
 		}
 		else {
+			printf("Close phase: Server close file error\n");
 			sendCloseAckMessage(-1);
 			isFileCloseSuccess = false;
 		}

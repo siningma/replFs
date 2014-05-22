@@ -259,11 +259,11 @@ int ClientInstance:: procVoteAckMessage(char *buf, std::set<uint32_t> *recvServe
 			}
 
 			if (smallestUpdateId == updateId) {
-				printf("Servers receive all updates till updateId: %u\n", updateId);
+				printf("\nServers receive all updates till updateId: %u\n", updateId);
 				return 0;
 			}
 
-            printf("Client retransmit file updates from updateId: %u\n", smallestUpdateId);
+            printf("\nClient retransmit file updates from updateId: %u\n", smallestUpdateId);
 			for (uint32_t i = smallestUpdateId; i < updateId; i++) {
 				std::map<uint32_t, Update>::iterator it = updateMap.find(i);
 				int byteOffset = it->second.byteOffset;
