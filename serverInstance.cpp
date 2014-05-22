@@ -44,6 +44,7 @@ ServerInstance:: ServerInstance(int packetLoss, uint32_t nodeId, std::string mou
 	this->nodeType = SERVER_NODE;
 	this->isFileOpen = false;
 	this->nextUpdateId = 0;
+	this->isFileCloseSuccess = false;
 }
 
 void ServerInstance:: execute() {
@@ -124,7 +125,6 @@ void ServerInstance:: reset() {
 	}
 	updateMap.clear();
 	nextUpdateId = 0;
-	memset(backup, 0, MAXFILESIZE);
 }
 
 void ServerInstance:: sendInitAckMessage() {
@@ -171,13 +171,16 @@ void ServerInstance:: procOpenFileMessage(char *buf) {
 		fp = fopen(fileFullname.c_str(), "r+b");
 
 	if (!fp) {
-		// fail to open file
+		// open the file fail
 		isFileOpen = false;
+		isFileCloseSuccess = false;	
 		printf("Create filename %s fail\n", fileFullname.c_str());
 		sendOpenFileAckMessage(-1);
 	} else {
+		// open the file successfully
 		isFileOpen = true;
-		printf("Create filename %s success\n", fileFullname.c_str());
+		isFileCloseSuccess = false;
+		printf("Create filename %s successful\n", fileFullname.c_str());
 		sendOpenFileAckMessage(0);
 	}
 }
@@ -239,9 +242,6 @@ void ServerInstance:: procCommitMessage(char *buf) {
 	commitMsg.print();
 
 	printf("Server next updateId: %u, has all updates: %d\n", nextUpdateId, nextUpdateId == updateMap.size());
-	// create backup in case rollback the file
-	memset(backup, 0, MAXFILESIZE);
-	fread(backup, sizeof(char), MAXFILESIZE, fp);
 
 	// write from memory to the file
 	for (uint32_t i = 0; i < nextUpdateId; i++) {
@@ -281,25 +281,6 @@ void ServerInstance:: procAbortMessage(char *buf) {
 
 	abortMsg.print();
 
-	if (remove(fileFullname.c_str()) != 0) {
-		printf("Rollback delete filename %s fail\n", fileFullname.c_str());
-		sendAbortAckMessage(-1);
-		reset();
-		return;
-	}
-
-	fp = fopen(fileFullname.c_str(), "w+b");
-	if (!fp) {
-		// fail to open file in order to do rollback
-		printf("Rollback recreate filename %s fail\n", fileFullname.c_str());
-		sendAbortAckMessage(-1);
-		reset();
-		return;
-	}
-
-	fwrite (backup , sizeof(char), MAXFILESIZE, fp);
-	fflush(fp);
-
 	reset();
 	sendAbortAckMessage(0);
 }
@@ -319,13 +300,20 @@ void ServerInstance:: procCloseMessage(char *buf) {
 
 	if (isFileOpen == true) {
 		int ret = fclose(fp);
-		if (ret == 0)
+		if (ret == 0) {
+			sendCloseAckMessage(0);
+			isFileCloseSuccess = true;
+			isFileOpen = false;
+		}
+		else {
+			sendCloseAckMessage(-1);
+			isFileCloseSuccess = false;
+		}
+	} else {
+		if (isFileCloseSuccess)
 			sendCloseAckMessage(0);
 		else
 			sendCloseAckMessage(-1);
-		isFileOpen = false;
-	} else {
-		sendCloseAckMessage(-1);
 	}
 }
 

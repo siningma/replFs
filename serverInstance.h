@@ -16,9 +16,10 @@ public:
 	FILE* fp;
 	std::string fileFullname;
 	bool isFileOpen;
-	char backup[MAXFILESIZE];
+
 	std::map<uint32_t, Update> updateMap;
 	uint32_t nextUpdateId;
+	bool isFileCloseSuccess;
 
 	ServerInstance(int packetLoss, uint32_t nodeId, std::string mount);
 

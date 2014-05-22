@@ -23,6 +23,7 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
     getCurrentTime(&first);
     while(1) {
         getCurrentTime(&now);
+        // send message once SEND_MSG_INTERVAL
         if (isTimeOut(&now, &last, SEND_MSG_INTERVAL)) {
         	switch(opCode) {
         		case INIT_OP:
