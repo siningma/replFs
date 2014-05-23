@@ -223,7 +223,7 @@ void ServerInstance:: procVoteMessage(char *buf) {
 			++nextUpdateId;
 	}
 
-	printf("Vote phase: server receives update till updateId: %u\n", nextUpdateId);
+	printf("Vote phase: server receives fileId: %u, update till updateId: %u\n", voteMsg.fileId, nextUpdateId);
 	sendVoteAckMessage(0, nextUpdateId);
 }
 
@@ -276,10 +276,11 @@ void ServerInstance:: procCommitMessage(char *buf) {
 		fflush(fp);
 	}
 
-	printf("Commit phase: update file till updateId: %u\n", nextUpdateId);
+	printf("Commit phase: update fileId: %u till updateId: %u\n", commitMsg.fileId, nextUpdateId);
 
 	// commit is done
 	commitFile = false;
+	delete[] backup;
 	reset();
 	sendCommitAckMessage(0);
 }
@@ -327,7 +328,7 @@ void ServerInstance:: procAbortMessage(char *buf) {
 	// abort is done
 	commitFile = false;
 	reset();
-	printf("Abort phase: Server aborts file updates ok\n");
+	printf("Abort phase: Server aborts fileId: %u updates ok\n", fileId);
 	sendAbortAckMessage(0);
 }
 
@@ -353,13 +354,13 @@ void ServerInstance:: procCloseMessage(char *buf) {
 	if (isFileOpen == true) {
 		int ret = fclose(fp);
 		if (ret == 0) {
-			printf("Close phase: Server close file ok\n");
+			printf("Close phase: Server close fileId: %u ok\n", closeMsg.fileId);
 			sendCloseAckMessage(0);
 			isFileCloseSuccess = true;
 			isFileOpen = false;
 		}
 		else {
-			printf("Close phase: Server close file error\n");
+			printf("Close phase: Server close fileId: %u error\n", closeMsg.fileId);
 			sendCloseAckMessage(-1);
 			isFileCloseSuccess = false;
 		}
@@ -371,5 +372,6 @@ void ServerInstance:: procCloseMessage(char *buf) {
 		else
 			sendCloseAckMessage(-1);
 	}
+	fp = NULL;
 }
 
