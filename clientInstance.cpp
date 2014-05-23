@@ -127,7 +127,7 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
 
                     // not init phase, if recieve messages from all servers, break the loop
                     if (opCode != INIT_OP) {
-                   		if (recvServerId != NULL && (int)recvServerId->size() == numServers)
+                   		if ((int)recvServerId->size() == numServers)
                     		break;         
                     }        
                 }
@@ -137,7 +137,7 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
 
     if (opCode != INIT_OP) {	
     	// not init phase, check if receive ack from all servers
-	    if (recvServerId != NULL && (int)recvServerId->size() < numServers)
+	    if ((int)recvServerId->size() < numServers)
 	        return ( ErrorReturn );
 	    else 
 	    	return (NormalReturn);
@@ -195,6 +195,10 @@ bool ClientInstance:: isRecvMsgMatchCurrOp(unsigned char msgType, int opCode) {
 	return false;
 } 
 
+bool ClientInstance:: isRecvMsgInServerIds(uint32_t nodeId) {
+	return serverIds.find(nodeId) != serverIds.end();
+}
+
 void ClientInstance:: sendInitMessage() {
 	InitMessage initMsg(nodeId, msgSeqNum);
 	msgSeqNum = getNextNum(msgSeqNum);
@@ -231,16 +235,15 @@ int ClientInstance:: procOpenFileAckMessage(char *buf, std::set<uint32_t> *recvS
 
 	openFileAckMessage.print();
 
+	if (!isRecvMsgInServerIds(openFileAckMessage.nodeId))
+		return 0;
+
 	if (openFileAckMessage.fileDesc < 0)
 		return ErrorReturn;
 	else {
-		std::set<uint32_t>::iterator it = recvServerId->find(openFileAckMessage.nodeId);
-		std::set<uint32_t>::iterator iter = serverIds.find(openFileAckMessage.nodeId);
-
 		// message id can be found in serverIds set, but not in recvServerId set
-		if (iter != serverIds.end() && it == recvServerId->end()) { 
+		if (recvServerId->find(openFileAckMessage.nodeId) == recvServerId->end()) { 
 			recvServerId->insert(openFileAckMessage.nodeId);
-			// printf("Recv OpenFileAck Message from server: %010u\n", openFileAckMessage.nodeId);
 		}
 		return 0;
 	}
@@ -277,14 +280,14 @@ int ClientInstance:: procVoteAckMessage(char *buf, std::set<uint32_t> *recvServe
 
 	voteAckMessage.print();
 
+	if (!isRecvMsgInServerIds(voteAckMessage.nodeId))
+		return 0;
+
 	if (voteAckMessage.fileDesc < 0)
 		return ErrorReturn;
 	else {
-		std::set<uint32_t>::iterator it = recvServerId->find(voteAckMessage.nodeId);
-		std::set<uint32_t>::iterator iter = serverIds.find(voteAckMessage.nodeId);
-
 		// message id can be found in serverIds set, but not in recvServerId set
-		if (iter != serverIds.end() && it == recvServerId->end()) { 
+		if (recvServerId->find(voteAckMessage.nodeId) == recvServerId->end()) { 
 			recvServerId->insert(voteAckMessage.nodeId);
 		}
 
@@ -337,14 +340,13 @@ int ClientInstance:: procCommitAckMessage(char *buf, std::set<uint32_t> *recvSer
 
 	commitAckMessage.print();
 
+	if (!isRecvMsgInServerIds(commitAckMessage.nodeId))
+		return 0;
+
 	if (commitAckMessage.fileDesc < 0)
 		return ErrorReturn;
 	else {
-		std::set<uint32_t>::iterator it = recvServerId->find(commitAckMessage.nodeId);
-		std::set<uint32_t>::iterator iter = serverIds.find(commitAckMessage.nodeId);
-
-		// message id can be found in serverIds set, but not in recvServerId set
-		if (iter != serverIds.end() && it == recvServerId->end()) { 
+		if (recvServerId->find(commitAckMessage.nodeId) == recvServerId->end()) { 
 			recvServerId->insert(commitAckMessage.nodeId);
 		}
 		return 0;
@@ -364,14 +366,13 @@ int ClientInstance:: procAbortAckMessage(char *buf, std::set<uint32_t> *recvServ
 
 	abortAckMessage.print();
 
+	if (!isRecvMsgInServerIds(abortAckMessage.nodeId))
+		return 0;
+
 	if (abortAckMessage.fileDesc < 0)
 		return ErrorReturn;
 	else {
-		std::set<uint32_t>::iterator it = recvServerId->find(abortAckMessage.nodeId);
-		std::set<uint32_t>::iterator iter = serverIds.find(abortAckMessage.nodeId);
-
-		// message id can be found in serverIds set, but not in recvServerId set
-		if (iter != serverIds.end() && it == recvServerId->end()) { 
+		if (recvServerId->find(abortAckMessage.nodeId) == recvServerId->end()) { 
 			recvServerId->insert(abortAckMessage.nodeId);
 		}
 		return 0;
@@ -391,16 +392,15 @@ int ClientInstance:: procCloseAckMessage(char *buf, std::set<uint32_t> *recvServ
 
 	closeAckMessage.print();
 
+	if (!isRecvMsgInServerIds(closeAckMessage.nodeId))
+		return 0;
+
 	if (closeAckMessage.fileDesc < 0)
 		return ErrorReturn;
 	else if (closeAckMessage.fileDesc == 1)
 		return 1;
 	else {
-		std::set<uint32_t>::iterator it = recvServerId->find(closeAckMessage.nodeId);
-		std::set<uint32_t>::iterator iter = serverIds.find(closeAckMessage.nodeId);
-
-		// message id can be found in serverIds set, but not in recvServerId set
-		if (iter != serverIds.end() && it == recvServerId->end()) { 
+		if (recvServerId->find(closeAckMessage.nodeId) == recvServerId->end()) { 
 			recvServerId->insert(closeAckMessage.nodeId);
 		}
 		return 0;

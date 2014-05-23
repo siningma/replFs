@@ -33,6 +33,7 @@ public:
 	int execute(int opCode, int timeout, std::set<uint32_t> *recvServerId, uint32_t fd, char *fileName);
 	void reset();
 	bool isRecvMsgMatchCurrOp(unsigned char msgType, int opCode);
+	bool isRecvMsgInServerIds(uint32_t nodeId);
 
 	void sendInitMessage();
 	int procInitAckMessage(char *buf);
