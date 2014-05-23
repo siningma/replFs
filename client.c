@@ -86,7 +86,7 @@ WriteBlock( int fd, char * buffer, int byteOffset, int blockSize ) {
         return ErrorReturn;
     if ( buffer == NULL)
         return ErrorReturn;
-    if ( blockSize < 0 || blockSize >= MaxBlockLength )
+    if ( blockSize < 0 || blockSize > MaxBlockLength )
         return ErrorReturn;
     if (!client->isFileOpen)
         return ErrorReturn;
