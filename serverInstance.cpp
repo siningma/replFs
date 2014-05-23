@@ -46,6 +46,7 @@ ServerInstance:: ServerInstance(int packetLoss, uint32_t nodeId, std::string mou
 	this->nextUpdateId = 0;
 	this->commitFile = false;
 	this->isFileCloseSuccess = false;
+	this->backup = NULL;
 }
 
 void ServerInstance:: execute() {
@@ -126,6 +127,11 @@ void ServerInstance:: reset() {
 	nextUpdateId = 0;
 }
 
+void ServerInstance:: resetBackup() {
+	delete[] backup;
+	backup = NULL;
+}
+
 void ServerInstance:: sendInitAckMessage() {
 	InitAckMessage initAckMsg(nodeId, msgSeqNum);
 	msgSeqNum = getNextNum(msgSeqNum);
@@ -155,33 +161,16 @@ void ServerInstance:: procOpenFileMessage(char *buf) {
 
 	openFileMessage.print();
 
-	if (isFileOpen) {
-		sendOpenFileAckMessage(0);
-		return;
-	}
-
+	// opening file only gets new filename
+	// create or open the file when commit is done
 	std::string filename(openFileMessage.filename);
 	fileFullname.clear();
 	fileFullname = mount + filename;
-	
-	if (!isFileExist(fileFullname.c_str()))
-		fp = fopen(fileFullname.c_str(), "w+b");
-	else
-		fp = fopen(fileFullname.c_str(), "r+b");
 
-	if (!fp) {
-		// open the file fail
-		isFileOpen = false;
-		isFileCloseSuccess = false;	
-		printf("OpenFile phase: Create filename %s fail\n", fileFullname.c_str());
-		sendOpenFileAckMessage(-1);
-	} else {
-		// open the file successfully
-		isFileOpen = true;
-		isFileCloseSuccess = false;
-		printf("OpenFile phase: Create filename %s successful\n", fileFullname.c_str());
-		sendOpenFileAckMessage(0);
-	}
+	isFileOpen = true;
+	isFileCloseSuccess = false;
+	printf("OpenFile phase: server receives new filename: %s\n", fileFullname.c_str());
+	sendOpenFileAckMessage(0);
 }
 
 void ServerInstance:: procWriteBlockMessage(char *buf) {
@@ -223,7 +212,7 @@ void ServerInstance:: procVoteMessage(char *buf) {
 			++nextUpdateId;
 	}
 
-	printf("Vote phase: server receives fileId: %u, update till updateId: %u\n", voteMsg.fileId, nextUpdateId);
+	printf("Vote phase: server receives fileId: %u till updateId: %u\n", voteMsg.fileId, nextUpdateId);
 	sendVoteAckMessage(0, nextUpdateId);
 }
 
@@ -240,7 +229,26 @@ void ServerInstance:: procCommitMessage(char *buf) {
 
 	commitMsg.print();
 
-	printf("Commit phase: start to complete all commits fileId: %u till updateId: %u\n", commitMsg.fileId, nextUpdateId);
+	printf("Commit phase: start to commit fileId: %u till updateId: %u\n", commitMsg.fileId, nextUpdateId);
+
+	if (!isFileExist(fileFullname.c_str()))
+		fp = fopen(fileFullname.c_str(), "w+b");
+	else
+		fp = fopen(fileFullname.c_str(), "r+b");
+
+	if (!fp) {
+		// open the file fails
+		isFileOpen = false;
+		isFileCloseSuccess = false;	
+		printf("Commit phase: Create filename %s fail\n", fileFullname.c_str());
+		sendCommitAckMessage(-1);
+		return;
+	} else {
+		// open the file successfully
+		isFileOpen = true;
+		isFileCloseSuccess = false;
+		printf("Commit phase: Create filename %s successful\n", fileFullname.c_str());
+	}
 
 	// before the first commit, do backup
 	fseek(fp, 0, SEEK_END);
@@ -250,6 +258,8 @@ void ServerInstance:: procCommitMessage(char *buf) {
 		memset(backup, 0, fileSize);
 		fread(backup, 1, fileSize, fp);
 	}
+	if (fileSize == 0)
+		printf("File is empty, when read file into backup\n");
 
 	// commitFile flag is set to false if commit is done, or abort return errors ,or abort is done
 	commitFile = true;
@@ -263,16 +273,15 @@ void ServerInstance:: procCommitMessage(char *buf) {
 		char *buffer = it->second.buffer;
 
 		// seek and write all updates to the file
+		// cannot reset commitFile flag in fseek and fwrite, because abort needs this flag
 		if (fseek (fp, byteOffset, SEEK_SET) != 0) {
 			printf("Commit phase: fseek error on updateId: %u\n", i);
-			reset();
 			sendCommitAckMessage(-1);
 			return;
 		}
 
 		if ((int)fwrite (buffer , sizeof(char), blockSize, fp) != blockSize) {
 			printf("Commit phase: fwrite error on updateId: %u\n", i);
-			reset();
 			sendCommitAckMessage(-1);
 			return;
 		}
@@ -283,8 +292,7 @@ void ServerInstance:: procCommitMessage(char *buf) {
 
 	// commit is done
 	commitFile = false;
-	delete[] backup;
-	backup = NULL;
+	resetBackup();
 	reset();
 	sendCommitAckMessage(0);
 }
@@ -308,8 +316,7 @@ void ServerInstance:: procAbortMessage(char *buf) {
 			printf("Rollback delete filename %s fail\n", fileFullname.c_str());
 			sendAbortAckMessage(-1);
 			commitFile = false;
-			delete[] backup;
-			backup = NULL;
+			resetBackup();
 			reset();
 			return;
 		}
@@ -320,16 +327,14 @@ void ServerInstance:: procAbortMessage(char *buf) {
 			printf("Rollback recreate filename %s fail\n", fileFullname.c_str());
 			sendAbortAckMessage(-1);
 			commitFile = false;
-			delete[] backup;
-			backup = NULL;
+			resetBackup();
 			reset();
 			return;
 		}
 
 		fwrite (backup , sizeof(char), sizeof(backup), fp);
 		fflush(fp);
-		delete[] backup;
-		backup = NULL;
+		resetBackup();
 	}
 
 	// abort is done
@@ -379,6 +384,5 @@ void ServerInstance:: procCloseMessage(char *buf) {
 		else
 			sendCloseAckMessage(-1);
 	}
-	fp = NULL;
 }
 

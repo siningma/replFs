@@ -67,6 +67,23 @@ appl2() {
 }
 
 static void
+appl3() {
+
+    //  simple case - just abort a single update on a new file
+    //  the file  should not be in the mount directory at the end given
+    //  it was not existing to start with. Script should check that
+
+
+    int fd;
+    int retVal;
+
+    fd = openFile( "file3" );
+    retVal = WriteBlock( fd, "abcdefghijkl", 0, 12 );
+    Abort( fd );
+    retVal = closeFile( fd ); // should abort and remove the file
+}
+
+static void
 appl4() {
 
     //  simple case - just do a single commit and then single abort
@@ -282,6 +299,30 @@ appl13() {
 
 int
 main() {
-     InitReplFs(port, packetloss, nservers);
-     appl2();
+    InitReplFs(port, packetloss, nservers);
+    appl1();
+
+    InitReplFs(port, packetloss, nservers);
+    appl2();
+
+    //    InitReplFs(port, packetloss, nservers);
+    // appl2();
+
+    InitReplFs(port, packetloss, nservers);
+    appl4();
+
+    InitReplFs(port, packetloss, nservers);
+    appl5();
+
+    InitReplFs(port, packetloss, nservers);
+    appl6();
+
+    InitReplFs(port, packetloss, nservers);
+    appl8();
+
+    InitReplFs(port, packetloss, nservers);
+    appl11();
+
+    InitReplFs(port, packetloss, nservers);
+    appl12();
 }

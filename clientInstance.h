@@ -29,6 +29,7 @@ public:
 	std::map<uint32_t, uint32_t> recvServerUpdateId;	// all servers response VoteAck updateId. use to find the smallest updateId
 
 	ClientInstance(int packetLoss, uint32_t nodeId, int numServers);
+	~ClientInstance();
 
 	int execute(int opCode, int timeout, std::set<uint32_t> *recvServerId, uint32_t fd, char *fileName);
 	void reset();

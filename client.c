@@ -154,6 +154,7 @@ Commit( int fd ) {
     }
     
     printf("Client Commit phase is done\n");
+    client->reset();
     return (NormalReturn);
 }
 
@@ -182,10 +183,13 @@ Abort( int fd )
     /*************************/
     printf("Client Abort phase...\n");
     std::set<uint32_t> recvServerId;
-    if (client->execute(ABORT_OP, LONG_TIMEOUT, &recvServerId, fd, NULL) == ErrorReturn)
+    if (client->execute(ABORT_OP, LONG_TIMEOUT, &recvServerId, fd, NULL) == ErrorReturn) {
+        client->reset();       
         return ErrorReturn;
+    }
 
     printf("Client Abort phase is done\n");
+    client->reset();
     return (NormalReturn);
 }
 

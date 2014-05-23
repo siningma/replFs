@@ -27,6 +27,7 @@ public:
 
 	void execute();
 	void reset();
+	void resetBackup();
 
 	void sendInitAckMessage();
 	void procInitMessage(char *buf);

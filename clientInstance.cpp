@@ -15,6 +15,11 @@ ClientInstance:: ClientInstance(int packetLoss, uint32_t nodeId, int numServers)
 	this->updateId = 0;
 }
 
+ClientInstance:: ~ClientInstance() {
+	serverIds.clear();
+	reset();
+}
+
 int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvServerId, uint32_t fd, char *fileName) {
 	struct timeval first;
     struct timeval last;
@@ -142,7 +147,7 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
 	    else 
 	    	return (NormalReturn);
 	} else {
-		printf("\nReceive serverId count: %d, numServers: %d\n", (int)serverIds.size(), numServers);
+		printf("\nClient receives serverId count: %d, numServers: %d\n", (int)serverIds.size(), numServers);
 	    printf("Server Ids: ");
 	    for (std::set<uint32_t>::iterator it = serverIds.begin(); it != serverIds.end(); ++it) {
 	        printf("%010u, ", *it);
@@ -150,15 +155,17 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
 	    printf("\n\n");
 
 	    // init phase, check if receive sufficient initAck messages
-	    if ((int)serverIds.size() < numServers)
+	    if ((int)serverIds.size() < numServers) {
+	    	printf("Client Init error: not sufficient servers initAck received\n");
 	    	return ErrorReturn;
+	    }
 	    else
 	    	return NormalReturn;
 	}
 }
 
 void ClientInstance:: reset() {
-	// reset all cache update cache
+	// reset all cache updates
 	for (std::map<uint32_t, Update>::iterator it = updateMap.begin(); it != updateMap.end(); ++it) {
 		char *buff = it->second.buffer;
 		delete[] buff;
