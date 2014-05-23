@@ -1,3 +1,4 @@
+RUNDIR = /afs/.ir/users/s/m/sma87/Developer/replFs
 ifndef RUNDIR
     $(error You must specify RUNDIR)
 endif

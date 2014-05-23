@@ -54,6 +54,10 @@ OpenFile( char * fileName ) {
 
     if (fileName == NULL || strlen(fileName) >= MAXFILENAMESIZE)
         return ErrorReturn;
+    if (client->serverIds.size() == 0) {
+        printf("No Server available\n");
+        return ErrorReturn;
+    }
 
 #ifdef DEBUG
     printf( "OpenFile: Opening File '%s'\n", fileName );
@@ -86,6 +90,10 @@ WriteBlock( int fd, char * buffer, int byteOffset, int blockSize ) {
         return ErrorReturn;
     if (!client->isFileOpen)
         return ErrorReturn;
+    if (client->serverIds.size() == 0) {
+        printf("No Server available\n");
+        return ErrorReturn;
+    }
 
 #ifdef DEBUG
     printf( "WriteBlock: Writing FD=%d, Offset=%d, Length=%d\n", fd, byteOffset, blockSize );
@@ -106,6 +114,10 @@ Commit( int fd ) {
         return ErrorReturn;
     if (!client->isFileOpen)
         return ErrorReturn;
+    if (client->serverIds.size() == 0) {
+        printf("No Server available\n");
+        return ErrorReturn;
+    }
 
 #ifdef DEBUG
     printf( "Commit: FD=%d\n", fd );
@@ -154,6 +166,10 @@ Abort( int fd )
         return ErrorReturn;
     if (!client->isFileOpen)
         return ErrorReturn;
+    if (client->serverIds.size() == 0) {
+        printf("No Server available\n");
+        return ErrorReturn;
+    }
 
 #ifdef DEBUG
     printf( "Abort: FD=%d\n", fd );
@@ -180,6 +196,10 @@ CloseFile( int fd ) {
         return ErrorReturn;
     if (!client->isFileOpen)
         return ErrorReturn;
+    if (client->serverIds.size() == 0) {
+        printf("No Server available\n");
+        return ErrorReturn;
+    }
 
 #ifdef DEBUG
     printf( "Close: FD=%d\n", fd );
