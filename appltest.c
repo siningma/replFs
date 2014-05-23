@@ -193,40 +193,40 @@ appl9() {
 }
 
 
-void
-static appl10() {
-    // test that if a server is crashed at write updates time,
-    // the library aborts the transaction at commit time
-    // the file should have only 0's in it.
+// void
+// static appl10() {
+//     // test that if a server is crashed at write updates time,
+//     // the library aborts the transaction at commit time
+//     // the file should have only 0's in it.
 
-    int fd;
-    int retVal;
-    int i;
-    char commitStrBuf[512];
+//     int fd;
+//     int retVal;
+//     int i;
+//     char commitStrBuf[512];
 
-    for( i = 0; i < 256; i++ )
-        commitStrBuf[i] = '0';
+//     for( i = 0; i < 256; i++ )
+//         commitStrBuf[i] = '0';
 
-    fd = openFile( "file10" );
+//     fd = openFile( "file10" );
 
-    // zero out the file first
-    for (i = 0; i < 100; i++)
-        retVal = WriteBlock( fd, commitStrBuf, i * 256 , 256 );
+//     // zero out the file first
+//     for (i = 0; i < 100; i++)
+//         retVal = WriteBlock( fd, commitStrBuf, i * 256 , 256 );
 
-    retVal = commit( fd );
-    retVal = closeFile( fd );
+//     retVal = commit( fd );
+//     retVal = closeFile( fd );
 
-    fd = openFile( "file10" );
-    retVal = WriteBlock( fd, "111111", 0 , 6 );
+//     fd = openFile( "file10" );
+//     retVal = WriteBlock( fd, "111111", 0 , 6 );
 
-    // KILL ONE OF THE  SERVERS HERE BY ISSUING A SYSTEM CALL
-    log("killing server\n");
-    stopServer(0);
-    log("committing\n");
+//     // KILL ONE OF THE  SERVERS HERE BY ISSUING A SYSTEM CALL
+//     log("killing server\n");
+//     stopServer(0);
+//     log("committing\n");
 
-    retVal = commit( fd ); // this should return in abort
-    retVal = closeFile( fd );
-}
+//     retVal = commit( fd ); // this should return in abort
+//     retVal = closeFile( fd );
+// }
 
 
 
