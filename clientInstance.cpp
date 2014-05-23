@@ -64,9 +64,11 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
                     if (status < HEADER_SIZE)
                         continue;
 
+                    // check if this message is sent by myself
                     if (isMessageSentByMe(buf))
                         continue;
 
+                    // check if we need to drop this message
                     if (isDropPacket(packetLoss)) {
                     	unsigned char msgType = buf[0];		
 						uint32_t msg_nodeId = 0;
@@ -80,6 +82,7 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
                     }
 
                     unsigned char msgType = buf[0];
+                    // if receive messages do not match current client phase, ignore this message
                     if (!isRecvMsgMatchCurrOp(msgType, opCode))
                     	continue;
 
@@ -117,6 +120,7 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
                     	break;
                     }  
 
+                    // not init phase, if recieve messages from all servers, break the loop
                     if (opCode != INIT_OP) {
                    		if (recvServerId != NULL && (int)recvServerId->size() == numServers)
                     		break;         
@@ -126,22 +130,21 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
         }
     }
 
-    // if one server is unavailable when receiving messages timeout, return error 
     if (opCode != INIT_OP) {	
-    	// not init phase, check if receives ack from all servers
+    	// not init phase, check if receive ack from all servers
 	    if (recvServerId != NULL && (int)recvServerId->size() < numServers)
 	        return ( ErrorReturn );
 	    else 
 	    	return (NormalReturn);
 	} else {
-		printf("\nReceive serverId count: %d\n", (int)serverIds.size());
+		printf("\nReceive serverId count: %d, numServers: %d\n", (int)serverIds.size(), numServers);
 	    printf("Server Ids: ");
 	    for (std::set<uint32_t>::iterator it = serverIds.begin(); it != serverIds.end(); ++it) {
 	        printf("%010u, ", *it);
 	    }
 	    printf("\n\n");
 
-	    // init phase, check if receive enough initAck messages
+	    // init phase, check if receive sufficient initAck messages
 	    if ((int)serverIds.size() < numServers)
 	    	return ErrorReturn;
 	    else
@@ -150,7 +153,7 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
 }
 
 void ClientInstance:: reset() {
-	// reset all, except numServers and serverIds
+	// reset all cache update cache
 	for (std::map<uint32_t, Update>::iterator it = updateMap.begin(); it != updateMap.end(); ++it) {
 		char *buff = it->second.buffer;
 		delete[] buff;
@@ -381,7 +384,6 @@ int ClientInstance:: procCloseAckMessage(char *buf, std::set<uint32_t> *recvServ
 	CloseAckMessage closeAckMessage;
 	closeAckMessage.deserialize(buf);
 
-	printf("Close ACK recieve\n");
 	closeAckMessage.print();
 
 	if (closeAckMessage.fileDesc < 0)

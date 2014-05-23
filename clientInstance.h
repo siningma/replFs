@@ -25,8 +25,8 @@ public:
 	bool isFileOpen;
 	uint32_t nextFd;	// next file id, a monotonically increasing number
 	uint32_t updateId;	// client total update count in one commit
-	std::map<uint32_t, Update> updateMap;
-	std::map<uint32_t, uint32_t> recvServerUpdateId;
+	std::map<uint32_t, Update> updateMap;	// cache one commit all updates
+	std::map<uint32_t, uint32_t> recvServerUpdateId;	// all servers response VoteAck updateId. use to find the smallest updateId
 
 	ClientInstance(int packetLoss, uint32_t nodeId, int numServers);
 
