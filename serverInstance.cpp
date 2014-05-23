@@ -366,13 +366,13 @@ void ServerInstance:: procCloseMessage(char *buf) {
 	if (isFileOpen == true) {
 		int ret = fclose(fp);
 		if (ret == 0) {
-			printf("Close phase: Server close fileId: %u ok\n", closeMsg.fileId);
+			printf("Close phase: Server closes fileId: %u ok\n", closeMsg.fileId);
 			sendCloseAckMessage(0);
 			isFileCloseSuccess = true;
 			isFileOpen = false;
 		}
 		else {
-			printf("Close phase: Server close fileId: %u error\n", closeMsg.fileId);
+			printf("Close phase: Server closes fileId: %u error\n", closeMsg.fileId);
 			sendCloseAckMessage(-1);
 			isFileCloseSuccess = false;
 		}

@@ -248,7 +248,6 @@ int ClientInstance:: procOpenFileAckMessage(char *buf, std::set<uint32_t> *recvS
 	if (openFileAckMessage.fileDesc < 0)
 		return ErrorReturn;
 	else {
-		// message id can be found in serverIds set, but not in recvServerId set
 		if (recvServerId->find(openFileAckMessage.nodeId) == recvServerId->end()) { 
 			recvServerId->insert(openFileAckMessage.nodeId);
 		}
@@ -293,7 +292,6 @@ int ClientInstance:: procVoteAckMessage(char *buf, std::set<uint32_t> *recvServe
 	if (voteAckMessage.fileDesc < 0)
 		return ErrorReturn;
 	else {
-		// message id can be found in serverIds set, but not in recvServerId set
 		if (recvServerId->find(voteAckMessage.nodeId) == recvServerId->end()) { 
 			recvServerId->insert(voteAckMessage.nodeId);
 		}

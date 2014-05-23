@@ -55,8 +55,8 @@ OpenFile( char * fileName ) {
 
     if (fileName == NULL || strlen(fileName) >= MAXFILENAMESIZE)
         return ErrorReturn;
-    if (client->serverIds.size() == 0) {
-        printf("No Server available\n");
+    if (client->serverIds.size() < numServers) {
+        printf("Client error: Not enough servers are available\n");
         return ErrorReturn;
     }
 
@@ -92,8 +92,8 @@ WriteBlock( int fd, char * buffer, int byteOffset, int blockSize ) {
         return ErrorReturn;
     if (!client->isFileOpen)
         return ErrorReturn;
-    if (client->serverIds.size() == 0) {
-        printf("No Server available\n");
+    if (client->serverIds.size() < numServers) {
+        printf("Client error: Not enough servers are available\n");
         return ErrorReturn;
     }
 
@@ -116,8 +116,8 @@ Commit( int fd ) {
         return ErrorReturn;
     if (!client->isFileOpen)
         return ErrorReturn;
-    if (client->serverIds.size() == 0) {
-        printf("No Server available\n");
+    if (client->serverIds.size() < numServers) {
+        printf("Client error: Not enough servers are available\n");
         return ErrorReturn;
     }
 
@@ -169,8 +169,8 @@ Abort( int fd )
         return ErrorReturn;
     if (!client->isFileOpen)
         return ErrorReturn;
-    if (client->serverIds.size() == 0) {
-        printf("No Server available\n");
+    if (client->serverIds.size() < numServers) {
+        printf("Client error: Not enough servers are available\n");
         return ErrorReturn;
     }
 
@@ -203,8 +203,8 @@ CloseFile( int fd ) {
         return ErrorReturn;
     if (!client->isFileOpen)
         return ErrorReturn;
-    if (client->serverIds.size() == 0) {
-        printf("No Server available\n");
+    if (client->serverIds.size() < numServers) {
+        printf("Client error: Not enough servers are available\n");
         return ErrorReturn;
     }
 
