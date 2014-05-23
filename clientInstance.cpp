@@ -388,6 +388,8 @@ int ClientInstance:: procCloseAckMessage(char *buf, std::set<uint32_t> *recvServ
 
 	if (closeAckMessage.fileDesc < 0)
 		return ErrorReturn;
+	else if (closeAckMessage.fileDesc == 1)
+		return 1;
 	else {
 		std::set<uint32_t>::iterator it = recvServerId->find(closeAckMessage.nodeId);
 		std::set<uint32_t>::iterator iter = serverIds.find(closeAckMessage.nodeId);

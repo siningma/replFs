@@ -344,6 +344,12 @@ void ServerInstance:: procCloseMessage(char *buf) {
 
 	closeMsg.print();
 
+	if ((int)updateMap.size() != 0) {
+		printf("Close phase: Server has uncommitted file update\n");
+		sendCloseAckMessage(1);
+		return;
+	}
+
 	if (isFileOpen == true) {
 		int ret = fclose(fp);
 		if (ret == 0) {

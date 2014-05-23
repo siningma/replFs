@@ -208,12 +208,20 @@ CloseFile( int fd ) {
   	/*****************************/
   	/* Check for Commit or Abort */
   	/*****************************/
-    if (Commit(fd) == ErrorReturn)
-        return ErrorReturn;
-
     std::set<uint32_t> recvServerId;
-    if (client->execute(CLOSE_OP, SHORT_TIMEOUT, &recvServerId, fd, NULL) == ErrorReturn)
+    int ret = client->execute(CLOSE_OP, SHORT_TIMEOUT, &recvServerId, fd, NULL);
+    if (ret == ErrorReturn)
         return ErrorReturn;
+    else if (ret == 1) {
+        // server has uncommitted updates, do commit
+        printf("Servers have uncommitted file updates\n");
+        if (Commit(fd) == ErrorReturn)
+            return ErrorReturn;
+
+        // try to close file again
+        if (client->execute(CLOSE_OP, SHORT_TIMEOUT, &recvServerId, fd, NULL) == ErrorReturn)
+            return ErrorReturn;
+    }
 
     client->isFileOpen = false;
     printf("Client CloseFile phase is done\n");
