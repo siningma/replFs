@@ -35,7 +35,7 @@ static int port = 44023;
 
 // The number of servers to pass to InitReplFs().
 // It is set by the -servers command-line argument.
-static int nservers = 2;
+static int nservers = 4;
 
 // The packet loss percentage to pass to InitReplFs().
 // It is set by the -packetloss command-line argument.
@@ -305,8 +305,8 @@ main() {
     InitReplFs(port, packetloss, nservers);
     appl2();
 
-    //    InitReplFs(port, packetloss, nservers);
-    // appl2();
+    InitReplFs(port, packetloss, nservers);
+    appl3();
 
     InitReplFs(port, packetloss, nservers);
     appl4();

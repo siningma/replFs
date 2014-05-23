@@ -20,7 +20,6 @@ public:
 	std::map<uint32_t, Update> updateMap;
 	uint32_t nextUpdateId;
 	char *backup;	// store file before commit updates in order to rollback if commit phase has errors
-	bool commitFile;	// set to true when vote phase is done, and start to do commit
 	bool isFileCloseSuccess;
 
 	ServerInstance(int packetLoss, uint32_t nodeId, std::string mount);
