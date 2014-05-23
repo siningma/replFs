@@ -41,7 +41,7 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
     client->rfs_NetInit(portNum);
 
     printf("Client Init phase...\n");
-    if (client->execute(INIT_OP, LONG_TIMEOUT, NULL, 0, NULL) == ErrorReturn)
+    if (client->execute(INIT_OP, SHORT_TIMEOUT, NULL, 0, NULL) == ErrorReturn)
         return ErrorReturn;
 
     printf("Client Init phase is done\n");

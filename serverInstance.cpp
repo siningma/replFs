@@ -42,10 +42,9 @@ int main(int argc, char *argv[]) {
 ServerInstance:: ServerInstance(int packetLoss, uint32_t nodeId, std::string mount): NetworkInstance(packetLoss, nodeId) {
 	this->mount = mount;
 	this->nodeType = SERVER_NODE;
-	this->isFileOpen = false;
 	this->nextUpdateId = 0;
-	this->isFileCloseSuccess = false;
 	this->backup = NULL;
+	this->fp = NULL;
 }
 
 void ServerInstance:: execute() {
@@ -170,8 +169,6 @@ void ServerInstance:: procOpenFileMessage(char *buf) {
 	fileFullname.clear();
 	fileFullname = mount + filename;
 
-	isFileOpen = true;
-	isFileCloseSuccess = false;
 	printf("OpenFile phase: server receives new filename: %s\n", fileFullname.c_str());
 	sendOpenFileAckMessage(0);
 }
@@ -241,15 +238,11 @@ void ServerInstance:: procCommitMessage(char *buf) {
 
 	if (!fp) {
 		// open the file fails
-		isFileOpen = false;
-		isFileCloseSuccess = false;	
 		printf("Commit phase: Create filename %s fail\n", fileFullname.c_str());
 		sendCommitAckMessage(-1);
 		return;
 	} else {
 		// open the file successfully
-		isFileOpen = true;
-		isFileCloseSuccess = false;
 		printf("Commit phase: Create filename %s successful\n", fileFullname.c_str());
 	}
 
@@ -352,32 +345,27 @@ void ServerInstance:: procCloseMessage(char *buf) {
 
 	closeMsg.print();
 
+	printf("Close phase: Server starts to close file\n");
+
 	if ((int)updateMap.size() != 0) {
 		printf("Close phase: Server has uncommitted file update\n");
 		sendCloseAckMessage(1);
 		return;
 	}
 
-	if (isFileOpen == true) {
+	if (fp != NULL) {
 		int ret = fclose(fp);
 		if (ret == 0) {
 			printf("Close phase: Server closes fileId: %u ok\n", closeMsg.fileId);
 			sendCloseAckMessage(0);
-			isFileCloseSuccess = true;
-			isFileOpen = false;
+			fp = NULL;
 		}
 		else {
 			printf("Close phase: Server closes fileId: %u error\n", closeMsg.fileId);
 			sendCloseAckMessage(-1);
-			isFileCloseSuccess = false;
 		}
 	} else {
-		if (isFileCloseSuccess) {
-			sendCloseAckMessage(0);
-			isFileOpen = false;
-		}
-		else
-			sendCloseAckMessage(-1);
+		sendCloseAckMessage(0);
 	}
 }
 
