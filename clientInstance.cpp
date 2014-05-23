@@ -113,8 +113,13 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
                         	return (ErrorReturn);
                         break;
                         case CLOSE_OP:
-                        if (procCloseAckMessage(buf, recvServerId) == -1)
-                        	return ( ErrorReturn );
+                        {
+                        	int ret = procCloseAckMessage(buf, recvServerId);
+	                        if (ret == ErrorReturn)
+	                        	return ( ErrorReturn );
+	                        else if (ret == 1)
+	                        	return 1;
+                    	}
                     	break;
                     	default:
                     	break;
