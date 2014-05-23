@@ -208,7 +208,8 @@ CloseFile( int fd ) {
   	/*****************************/
   	/* Check for Commit or Abort */
   	/*****************************/
-    // TODO:
+    if (Commit(fd) == ErrorReturn)
+        return ErrorReturn;
 
     std::set<uint32_t> recvServerId;
     if (client->execute(CLOSE_OP, SHORT_TIMEOUT, &recvServerId, fd, NULL) == ErrorReturn)
