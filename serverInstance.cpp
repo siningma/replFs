@@ -328,7 +328,7 @@ void ServerInstance:: procAbortMessage(char *buf) {
 	// abort is done
 	commitFile = false;
 	reset();
-	printf("Abort phase: Server aborts fileId: %u updates ok\n", fileId);
+	printf("Abort phase: Server aborts fileId: %u updates ok\n", abortMsg.fileId);
 	sendAbortAckMessage(0);
 }
 
