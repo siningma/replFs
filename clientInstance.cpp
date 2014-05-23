@@ -68,7 +68,7 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
                         continue;
 
                     if (isDropPacket(packetLoss)) {
-                    	unsigned char msgType = buf[0];			
+                    	unsigned char msgType = buf[0];		
 						uint32_t msg_nodeId = 0;
 						memcpy(&msg_nodeId, buf + 2, 4);
 						msg_nodeId = ntohl(msg_nodeId);
@@ -78,6 +78,10 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
 						printf("Drop Message: MsgType: 0x%02x, nodeId: %010u, msgSeqNum: %u\n", msgType, msg_nodeId, msg_seqNum);
                         continue;
                     }
+
+                    unsigned char msgType = buf[0];
+                    if (!isRecvMsgMatchCurrOp(msgType, opCode))
+                    	continue;
 
                     printf("Recv message size: %d, ", (int)status);
                     switch(opCode) {
@@ -155,6 +159,33 @@ void ClientInstance:: reset() {
 	updateId = 0;
 	recvServerUpdateId.clear();
 }
+
+bool ClientInstance:: isRecvMsgMatchCurrOp(unsigned char msgType, int opCode) {
+	switch(opCode) {
+		case INIT_OP:
+        return msgType == INITACK;
+		break;
+		case OPEN_OP:
+		return msgType == OPENFILEACK;
+		break;
+		case VOTE_OP:
+		return msgType == VOTEACK;
+        break;
+        case COMMIT_OP:
+        return msgType == COMMITACK;
+        break;
+        case ABORT_OP:
+        return msgType == ABORTACK;
+        break;
+		case CLOSE_OP:
+		return msgType == CLOSEACK;
+		break;
+		default:
+		return false;
+		break;
+	}
+	return false;
+} 
 
 void ClientInstance:: sendInitMessage() {
 	InitMessage initMsg(nodeId, msgSeqNum);
@@ -344,7 +375,6 @@ void ClientInstance:: sendCloseMessage(uint32_t fileId) {
 	msgSeqNum = getNextNum(msgSeqNum);
 	
 	sendMessage(&closeMsg, HEADER_SIZE + 4);
-
 }
 
 int ClientInstance:: procCloseAckMessage(char *buf, std::set<uint32_t> *recvServerId) {
