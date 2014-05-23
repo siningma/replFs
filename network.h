@@ -66,6 +66,8 @@
 #define MAXBUFSIZE 1024
 #define MAXFILESIZE 1048576
 
+#define DEBUG
+
 typedef	struct sockaddr_in			Sockaddr;
 
 class Message {
