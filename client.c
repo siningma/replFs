@@ -40,6 +40,7 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
 
     client->rfs_NetInit(portNum);
 
+    printf("Client Init phase...\n");
     if (client->execute(INIT_OP, SHORT_TIMEOUT, NULL, 0, NULL) == ErrorReturn)
         return ErrorReturn;
 
@@ -65,6 +66,7 @@ OpenFile( char * fileName ) {
     int fd = client->nextFd;
     client->nextFd = getNextNum(client->nextFd);
 
+    printf("Client OpenFile phase...\n");
     std::set<uint32_t> recvServerId;
     if (client->execute(OPEN_OP, LONG_TIMEOUT, &recvServerId, fd, fileName) == ErrorReturn)
         return ErrorReturn;
@@ -131,7 +133,7 @@ Commit( int fd ) {
     std::set<uint32_t> recvVoteServerId;
     while(1) {
         int ret = client->execute(VOTE_OP, LONG_TIMEOUT, &recvVoteServerId, fd, NULL);
-        if (ret < 0) {
+        if (ret == ErrorReturn) {
             // error happens on servers, abort all file updates
             Abort(fd);
             return (ErrorReturn);
@@ -146,7 +148,7 @@ Commit( int fd ) {
     printf("Client Commit phase...\n");
     std::set<uint32_t> recvCommitServerId;
     if (client->execute(COMMIT_OP, LONG_TIMEOUT, &recvCommitServerId, fd, NULL) == ErrorReturn) {
-        printf("File commit error, rollback all updates in this commit\n");
+        printf("File commit error, rollback all updates in fileId: %d\n", fd);
         Abort(fd);
         return ErrorReturn;
     }
@@ -178,6 +180,7 @@ Abort( int fd )
     /*************************/
     /* Abort the transaction */
     /*************************/
+    printf("Client Abort phase...\n");
     std::set<uint32_t> recvServerId;
     if (client->execute(ABORT_OP, LONG_TIMEOUT, &recvServerId, fd, NULL) == ErrorReturn)
         return ErrorReturn;
@@ -208,6 +211,7 @@ CloseFile( int fd ) {
   	/*****************************/
   	/* Check for Commit or Abort */
   	/*****************************/
+    printf("Client Close phase...\n");
     std::set<uint32_t> recvServerId;
     int ret = client->execute(CLOSE_OP, SHORT_TIMEOUT, &recvServerId, fd, NULL);
     if (ret == ErrorReturn)

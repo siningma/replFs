@@ -248,7 +248,7 @@ void ServerInstance:: procCommitMessage(char *buf) {
 	backup = new char[fileSize];
 	fread(backup, 1, fileSize, fp);
 
-	// commitFile flag is set to false if commit is done or abort errors or done
+	// commitFile flag is set to false if commit is done, or abort return errors ,or abort is done
 	commitFile = true;
 
 	// write from memory to the file
