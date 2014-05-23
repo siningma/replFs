@@ -240,13 +240,16 @@ void ServerInstance:: procCommitMessage(char *buf) {
 
 	commitMsg.print();
 
-	printf("Commit phase: Server next updateId: %u, updateMap size: %d\n", nextUpdateId, (int)updateMap.size());
+	printf("Commit phase: start to complete all commits fileId: %u till updateId: %u\n", commitMsg.fileId, nextUpdateId);
 
 	// before the first commit, do backup
 	fseek(fp, 0, SEEK_END);
 	long fileSize = ftell(fp);
-	backup = new char[fileSize];
-	fread(backup, 1, fileSize, fp);
+	if (fileSize > 0) {
+		backup = new char[fileSize];
+		memset(backup, 0, fileSize);
+		fread(backup, 1, fileSize, fp);
+	}
 
 	// commitFile flag is set to false if commit is done, or abort return errors ,or abort is done
 	commitFile = true;
@@ -276,11 +279,12 @@ void ServerInstance:: procCommitMessage(char *buf) {
 		fflush(fp);
 	}
 
-	printf("Commit phase: update fileId: %u till updateId: %u\n", commitMsg.fileId, nextUpdateId);
+	printf("Commit phase: All commits are done update fileId: %u till updateId: %u\n", commitMsg.fileId, nextUpdateId);
 
 	// commit is done
 	commitFile = false;
 	delete[] backup;
+	backup = NULL;
 	reset();
 	sendCommitAckMessage(0);
 }
@@ -305,6 +309,7 @@ void ServerInstance:: procAbortMessage(char *buf) {
 			sendAbortAckMessage(-1);
 			commitFile = false;
 			delete[] backup;
+			backup = NULL;
 			reset();
 			return;
 		}
@@ -316,6 +321,7 @@ void ServerInstance:: procAbortMessage(char *buf) {
 			sendAbortAckMessage(-1);
 			commitFile = false;
 			delete[] backup;
+			backup = NULL;
 			reset();
 			return;
 		}
@@ -323,6 +329,7 @@ void ServerInstance:: procAbortMessage(char *buf) {
 		fwrite (backup , sizeof(char), sizeof(backup), fp);
 		fflush(fp);
 		delete[] backup;
+		backup = NULL;
 	}
 
 	// abort is done
