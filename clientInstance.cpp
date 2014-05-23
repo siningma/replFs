@@ -67,17 +67,15 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
                     if (isMessageSentByMe(buf))
                         continue;
 
-                    unsigned char msgType = buf[0];
                     if (isDropPacket(packetLoss)) {
-                        printf("Drop Message: MsgType: 0x%02x\n", msgType);
-					
+                    	unsigned char msgType = buf[0];			
 						uint32_t msg_nodeId = 0;
 						memcpy(&msg_nodeId, buf + 2, 4);
 						msg_nodeId = ntohl(msg_nodeId);
 						uint32_t msg_seqNum = 0;
 						memcpy(&msg_seqNum, buf + 6, 4);
 						msg_seqNum = ntohl(msg_seqNum);
-						printf("nodeId: %010u, msgSeqNum: %u\n", msg_nodeId, msg_seqNum);
+						printf("Drop Message: MsgType: 0x%02x, nodeId: %010u, msgSeqNum: %u\n", msgType, msg_nodeId, msg_seqNum);
                         continue;
                     }
 
@@ -115,28 +113,36 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
                     	break;
                     }  
 
-                    switch(opCode) {
-                    	case OPEN_OP:
-                    	case VOTE_OP:
-                    	case COMMIT_OP:
-                    	case ABORT_OP:
-                    	case CLOSE_OP:
-                    	if ((int)recvServerId->size() == numServers)
-                    		return NormalReturn;
-                    	break;
-                    	default:
-                    	break;
-                    }                  
+                    if (opCode != INIT_OP) {
+                   		if (recvServerId != NULL && (int)recvServerId->size() == numServers)
+                    		break;         
+                    }        
                 }
             }
         }
     }
 
     // if one server is unavailable when receiving messages timeout, return error 
-    if (recvServerId != NULL && (int)recvServerId->size() < numServers)
-        return ( ErrorReturn );
-    else 
-    	return (NormalReturn);
+    if (opCode != INIT_OP) {	
+    	// not init phase, check if receives ack from all servers
+	    if (recvServerId != NULL && (int)recvServerId->size() < numServers)
+	        return ( ErrorReturn );
+	    else 
+	    	return (NormalReturn);
+	} else {
+		printf("\nReceive serverId count: %d\n", (int)serverIds.size());
+	    printf("Server Ids: ");
+	    for (std::set<uint32_t>::iterator it = serverIds.begin(); it != serverIds.end(); ++it) {
+	        printf("%010u, ", *it);
+	    }
+	    printf("\n\n");
+
+	    // init phase, check if receive enough initAck messages
+	    if ((int)serverIds.size() < numServers)
+	    	return ErrorReturn;
+	    else
+	    	return NormalReturn;
+	}
 }
 
 void ClientInstance:: reset() {
@@ -337,16 +343,15 @@ void ClientInstance:: sendCloseMessage(uint32_t fileId) {
 	CloseMessage closeMsg(nodeId, msgSeqNum, fileId);
 	msgSeqNum = getNextNum(msgSeqNum);
 	
-	ssize_t cc = sendMessage(&closeMsg, HEADER_SIZE + 4);
+	sendMessage(&closeMsg, HEADER_SIZE + 4);
 
-	printf("Send Message size: %d, ", (int)cc);
-	closeMsg.print();
 }
 
 int ClientInstance:: procCloseAckMessage(char *buf, std::set<uint32_t> *recvServerId) {
 	CloseAckMessage closeAckMessage;
 	closeAckMessage.deserialize(buf);
 
+	printf("Close ACK recieve\n");
 	closeAckMessage.print();
 
 	if (closeAckMessage.fileDesc < 0)

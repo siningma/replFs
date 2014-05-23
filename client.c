@@ -43,13 +43,7 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
     if (client->execute(INIT_OP, SHORT_TIMEOUT, NULL, 0, NULL) == ErrorReturn)
         return ErrorReturn;
 
-    printf("\nReceive serverId count: %d\n", (int)client->serverIds.size());
-    printf("Server Ids: ");
-    for (std::set<uint32_t>::iterator it = client->serverIds.begin(); it != client->serverIds.end(); ++it) {
-        printf("%010u, ", *it);
-    }
-    printf("\n\n");
-
+    printf("Client Init phase is done\n");
     return (NormalReturn);
 }
 
@@ -72,6 +66,7 @@ OpenFile( char * fileName ) {
         return ErrorReturn;
 
     client->isFileOpen = true;
+    printf("Client OpenFile phase is done\n");
     return fd;
 }
 
@@ -131,6 +126,7 @@ Commit( int fd ) {
         } else if (ret == 0)
             break;
     }
+    printf("Client Vote phase is done\n");
 
   	/****************/
   	/* Commit Phase */
@@ -143,6 +139,7 @@ Commit( int fd ) {
         return ErrorReturn;
     }
     
+    printf("Client Commit phase is done\n");
     return (NormalReturn);
 }
 
@@ -169,6 +166,7 @@ Abort( int fd )
     if (client->execute(ABORT_OP, LONG_TIMEOUT, &recvServerId, fd, NULL) == ErrorReturn)
         return ErrorReturn;
 
+    printf("Client Abort phase is done\n");
     return (NormalReturn);
 }
 
@@ -197,6 +195,7 @@ CloseFile( int fd ) {
         return ErrorReturn;
 
     client->isFileOpen = false;
+    printf("Client CloseFile phase is done\n");
     return (NormalReturn);
 }
 

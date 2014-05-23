@@ -69,15 +69,13 @@ void ServerInstance:: execute() {
 					continue;
 
 				if (isDropPacket(packetLoss)) {
-					printf("Drop Message: MsgType: 0x%02x, ", msgType);
-					
 					uint32_t msg_nodeId = 0;
 					memcpy(&msg_nodeId, buf + 2, 4);
 					msg_nodeId = ntohl(msg_nodeId);
 					uint32_t msg_seqNum = 0;
 					memcpy(&msg_seqNum, buf + 6, 4);
 					msg_seqNum = ntohl(msg_seqNum);
-					printf("nodeId: %010u, msgSeqNum: %u\n", msg_nodeId, msg_seqNum);
+					printf("Drop Message: MsgType: 0x%02x, nodeId: %010u, msgSeqNum: %u\n", msgType, msg_nodeId, msg_seqNum);
 					continue;
 				}
 
@@ -337,9 +335,7 @@ void ServerInstance:: sendCloseAckMessage(int fileDesc) {
 	CloseAckMessage closeAckMessage(nodeId, msgSeqNum, fileDesc);
 	msgSeqNum = getNextNum(msgSeqNum);
 
-	ssize_t cc = sendMessage(&closeAckMessage, HEADER_SIZE + 4);
-	printf("Send Message size: %d, ", (int)cc);
-	closeAckMessage.print();
+	sendMessage(&closeAckMessage, HEADER_SIZE + 4);
 }
 
 void ServerInstance:: procCloseMessage(char *buf) {
