@@ -67,6 +67,10 @@ void ServerInstance:: execute() {
 				if (isMessageSentByMe(buf))
 					continue;
 
+				// message received not from client
+				if (!isRecvClientMsg(msgType))
+					continue;
+
 				if (isDropPacket(packetLoss)) {
 					uint32_t msg_nodeId = 0;
 					memcpy(&msg_nodeId, buf + 2, 4);
@@ -132,6 +136,36 @@ void ServerInstance:: resetBackup() {
 		delete[] backup; 	
 		backup = NULL;
 	}
+}
+
+bool ServerInstance:: isRecvClientMsg(unsigned char msgType) {
+	switch(msgType) {
+		case INIT:
+		return true;
+		break;
+		case OPENFILE:
+		return true;
+		break;
+		case WRITEBLOCK:
+		return true;
+		break;
+		case VOTE:
+		return true;
+		break;
+		case COMMIT:
+		return true;
+		break;
+		case ABORT:
+		return true;
+		break;
+		case CLOSE:
+		return true;
+		break;
+		default:
+		return false;
+		break;
+	}
+	return false;
 }
 
 void ServerInstance:: sendInitAckMessage() {

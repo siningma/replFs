@@ -25,6 +25,7 @@ public:
 	void execute();
 	void reset();
 	void resetBackup();
+	bool isRecvClientMsg(unsigned char msgType);
 
 	void sendInitAckMessage();
 	void procInitMessage(char *buf);
