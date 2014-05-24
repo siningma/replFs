@@ -145,8 +145,10 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
 	    	printf("Client error: not sufficient Ack messages received\n");
 	        return ( ErrorReturn );
 	    }
-	    else 
+	    else {
+	    	printf("Client receives enough servers Ack messages\n");
 	    	return (NormalReturn);
+	    }
 	} else {
 		printf("\nClient receives serverId count: %d, numServers: %d\n", (int)serverIds.size(), numServers);
 	    printf("Server Ids: ");
@@ -157,11 +159,13 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
 
 	    // init phase, check if receive sufficient initAck messages
 	    if ((int)serverIds.size() < numServers) {
-	    	printf("Client Init error: not sufficient servers initAck received\n");
+	    	printf("Client Init error: not sufficient servers InitAck received\n");
 	    	return ErrorReturn;
 	    }
-	    else
+	    else {
+	    	printf("Client receives enough servers InitAck messages\n");
 	    	return NormalReturn;
+	    }
 	}
 }
 

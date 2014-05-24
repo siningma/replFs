@@ -348,6 +348,8 @@ void ServerInstance:: procAbortMessage(char *buf) {
 		if (fflush(fp) < 0) {
 			printf("Abort phase: fflush error when rollback filename %s fail\n", fileFullname.c_str());
 			sendCommitAckMessage(-1);
+			resetBackup();
+			reset();
 			return;
 		}
 		resetBackup();
