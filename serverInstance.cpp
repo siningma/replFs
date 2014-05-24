@@ -288,8 +288,6 @@ void ServerInstance:: procCommitMessage(char *buf) {
 		memset(backup, 0, fileSize);
 		fread(backup, 1, fileSize, fp);
 	}
-	if (fileSize == 0)
-		printf("File is empty, when read file into backup\n");
 
 	// write from memory to the file
 	for (uint32_t i = 0; i < nextUpdateId; i++) {

@@ -28,7 +28,7 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
     memset(&first, 0, sizeof(struct timeval));
     memset(&last, 0, sizeof(struct timeval));
     memset(&now, 0, sizeof(struct timeval));
-    
+
     getCurrentTime(&first);
     while(1) {
         getCurrentTime(&now);
@@ -146,7 +146,7 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
     if (opCode != INIT_OP) {	
     	// not init phase, check if receive ack from all servers
 	    if ((int)recvServerId->size() < numServers) {
-	    	printf("Client error: not sufficient ack messages received\n");
+	    	printf("Client error: not sufficient Ack messages received\n");
 	        return ( ErrorReturn );
 	    }
 	    else 
