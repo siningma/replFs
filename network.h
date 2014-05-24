@@ -57,8 +57,8 @@
 
 #define HEADER_SIZE 	10	
 #define SEND_MSG_INTERVAL 	200
-#define SHORT_TIMEOUT 	2000
-#define LONG_TIMEOUT 	4000
+#define SHORT_TIMEOUT 	4000
+#define LONG_TIMEOUT 	6000
 
 #define CLIENT_NODE 	0
 #define SERVER_NODE 	1
