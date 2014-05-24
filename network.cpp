@@ -125,7 +125,7 @@ bool NetworkInstance:: rfs_IsRecvPacket() {
   		timeout.tv_sec = 5;
 	timeout.tv_usec = 0;
 
-	int ret = select(32, &fdmask, NULL, NULL, &timeout);
+	int ret = select(sockfd + 1, &fdmask, NULL, NULL, &timeout);
 	if (ret == -1) {
 		perror("select()");
 		return false;
@@ -163,5 +163,6 @@ ssize_t NetworkInstance:: sendMessage(Message *msg, int len) {
 bool NetworkInstance:: isMessageSentByMe(char *buf) {
 	uint32_t msg_nodeId = 0;
 	memcpy(&msg_nodeId, buf + 2, 4);
-	return this->nodeId == ntohl(msg_nodeId);
+	msg_nodeId = ntohl(msg_nodeId);
+	return nodeId == msg_nodeId;
 }

@@ -69,9 +69,6 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
                 int status = rfs_RecvFrom(buf, MAXBUFSIZE);
 
                 if (status > 0) {
-                    if (status < HEADER_SIZE)
-                        continue;
-
                     // check if this message is sent by myself
                     if (isMessageSentByMe(buf))
                         continue;
@@ -207,6 +204,7 @@ bool ClientInstance:: isRecvMsgMatchCurrOp(unsigned char msgType, int opCode) {
 	return false;
 } 
 
+// return true if nodeId can be found in serverIds
 bool ClientInstance:: isRecvMsgInServerIds(uint32_t nodeId) {
 	return serverIds.find(nodeId) != serverIds.end();
 }
@@ -224,11 +222,10 @@ int ClientInstance:: procInitAckMessage(char *buf) {
 
 	initAckMessage.print();
 
-	if ((int)serverIds.size() == numServers)
+	if ((int)serverIds.size() >= numServers)
 		return 0;
 
-	std::set<uint32_t>::iterator it = serverIds.find(initAckMessage.nodeId);
-	if (it == serverIds.end())
+	if (!isRecvMsgInServerIds(initAckMessage.nodeId))
 		serverIds.insert(initAckMessage.nodeId);
 
 	return 0;

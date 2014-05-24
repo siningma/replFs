@@ -1,4 +1,4 @@
-RUNDIR = Developer/replFs
+RUNDIR = ..
 ifndef RUNDIR
     $(error You must specify RUNDIR)
 endif
