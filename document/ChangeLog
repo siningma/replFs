@@ -1,0 +1,10 @@
+Changelog - 5/23/2014
+
+[Timeout]
+Client extends InitAck and CloseAck timeout to 4 seconds. Client extends OpenFileAck, VoteAck, CommitAck, and AbortAck to 6 seconds.
+
+[OpenFile]
+When server receives OpenFile messages, server does not create or open file immediately. Only when commit, server creates or opens the file.
+
+[CloseFile]
+When server receives CloseFile messages, if there is any uncommitted WriteBlock file updates, commit these updates first and then close the file.
