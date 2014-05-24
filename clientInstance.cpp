@@ -73,9 +73,13 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
                     if (isMessageSentByMe(buf))
                         continue;
 
+                    unsigned char msgType = buf[0];
+                    // if receive messages do not match current client phase, ignore this message
+                    if (!isRecvMsgMatchCurrOp(msgType, opCode))
+                    	continue;
+
                     // check if we need to drop this message
-                    if (isDropPacket(packetLoss)) {
-                    	unsigned char msgType = buf[0];		
+                    if (isDropPacket(packetLoss)) {	
 						uint32_t msg_nodeId = 0;
 						memcpy(&msg_nodeId, buf + 2, 4);
 						msg_nodeId = ntohl(msg_nodeId);
@@ -85,11 +89,6 @@ int ClientInstance:: execute(int opCode, int timeout, std::set<uint32_t> *recvSe
 						printf("Drop Message: MsgType: 0x%02x, nodeId: %010u, msgSeqNum: %u\n", msgType, msg_nodeId, msg_seqNum);
                         continue;
                     }
-
-                    unsigned char msgType = buf[0];
-                    // if receive messages do not match current client phase, ignore this message
-                    if (!isRecvMsgMatchCurrOp(msgType, opCode))
-                    	continue;
 
                     printf("Recv message size: %d, ", (int)status);
                     switch(opCode) {

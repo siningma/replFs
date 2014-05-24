@@ -57,11 +57,7 @@ void ServerInstance:: execute() {
 			ssize_t status = rfs_RecvFrom(buf, MAXBUFSIZE);
 
 			if (status > 0) {
-				if (status < HEADER_SIZE)
-                	continue;
-
 				unsigned char msgType = buf[0];
-
 				if (isMessageSentByMe(buf))
 					continue;
 
@@ -296,18 +292,13 @@ void ServerInstance:: procCommitMessage(char *buf) {
 		char *buffer = it->second.buffer;
 
 		// seek and write all updates to the file
-		if (fseek (fp, byteOffset, SEEK_SET) != 0) {
-			printf("Commit phase: fseek error on updateId: %u\n", i);
+		fseek (fp, byteOffset, SEEK_SET);
+		fwrite (buffer, sizeof(char), blockSize, fp);
+		if (fflush(fp) < 0) {
+			printf("Commit phase: fflush error on updateId: %u\n", i);
 			sendCommitAckMessage(-1);
 			return;
 		}
-
-		if ((int)fwrite (buffer , sizeof(char), blockSize, fp) != blockSize) {
-			printf("Commit phase: fwrite error on updateId: %u\n", i);
-			sendCommitAckMessage(-1);
-			return;
-		}
-		fflush(fp);
 	}
 
 	printf("Commit phase: All commits are done update fileId: %u till updateId: %u\n", commitMsg.fileId, nextUpdateId);
@@ -333,8 +324,10 @@ void ServerInstance:: procAbortMessage(char *buf) {
 
 	if (backup != NULL) {
 		printf("Abort phase: Server error happens during commit and rollback the file"); 
+		fclose(fp);
+		fp = NULL;
 		if (remove(fileFullname.c_str()) != 0) {
-			printf("Rollback delete filename %s fail\n", fileFullname.c_str());
+			printf("Abort phase: Rollback delete filename %s fail\n", fileFullname.c_str());
 			sendAbortAckMessage(-1);
 			resetBackup();
 			reset();
@@ -344,7 +337,7 @@ void ServerInstance:: procAbortMessage(char *buf) {
 		fp = fopen(fileFullname.c_str(), "w+b");
 		if (!fp) {
 			// fail to open file in order to do rollback
-			printf("Rollback recreate filename %s fail\n", fileFullname.c_str());
+			printf("Abort phase: Rollback recreate filename %s fail\n", fileFullname.c_str());
 			sendAbortAckMessage(-1);
 			resetBackup();
 			reset();
@@ -352,7 +345,11 @@ void ServerInstance:: procAbortMessage(char *buf) {
 		}
 
 		fwrite (backup , sizeof(char), sizeof(backup), fp);
-		fflush(fp);
+		if (fflush(fp) < 0) {
+			printf("Abort phase: fflush error when rollback filename %s fail\n", fileFullname.c_str());
+			sendCommitAckMessage(-1);
+			return;
+		}
 		resetBackup();
 	}
 
