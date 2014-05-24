@@ -1,0 +1,16 @@
+I do not know why I cannot use the test scripts to test more than 2 servers. Always cannot receive enough InitAck messages.
+But if less than or equal to 2 servers, the client can recieve suffient servers InitAck messages.
+
+But All tests are able to pass if opening 5 windows and run test in the 6th window.
+The command that is used to test:
+5 Servers:
+./replFsServer -port 44023 -mount /afs/.ir/users/s/m/sma87/Developer/replFs/mount/myth1 -drop 20
+./replFsServer -port 44023 -mount /afs/.ir/users/s/m/sma87/Developer/replFs/mount/myth2 -drop 20
+./replFsServer -port 44023 -mount /afs/.ir/users/s/m/sma87/Developer/replFs/mount/myth3 -drop 20
+./replFsServer -port 44023 -mount /afs/.ir/users/s/m/sma87/Developer/replFs/mount/myth4 -drop 20
+./replFsServer -port 44023 -mount /afs/.ir/users/s/m/sma87/Developer/replFs/mount/myth5 -drop 20
+
+1 Client:
+./test -port 44023 -servers 5 -test 1 -packetloss 20 myth1 myth2 myth3 myth4 myth5
+
+
