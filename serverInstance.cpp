@@ -14,8 +14,6 @@ int main(int argc, char *argv[]) {
 	unsigned short port = (unsigned short)atoi(argv[2]);
 	std::string mount(argv[4]);
 	int packetLoss = atoi(argv[6]);
-	if (mount[mount.size() - 1] != '/')
-		mount += '/';
 
 	srand(time(NULL));
 	uint32_t nodeId = (uint32_t)rand();
@@ -201,7 +199,7 @@ void ServerInstance:: procOpenFileMessage(char *buf) {
 	// create or open the file when commit is done
 	std::string filename(openFileMessage.filename);
 	fileFullname.clear();
-	fileFullname = mount + filename;
+	fileFullname = mount + "/" + filename;
 
 	printf("OpenFile phase: server receives new filename: %s\n", fileFullname.c_str());
 	sendOpenFileAckMessage(0);
