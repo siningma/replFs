@@ -23,12 +23,12 @@ int main(int argc, char *argv[]) {
 	printf("Server port: %u, mount: %s, packetLoss: %d, nodeId: %010u\n", port, mount.c_str(), packetLoss, nodeId);
 	ServerInstance *server = new ServerInstance(packetLoss, nodeId, mount.c_str());
 
-	int err = mkdir(mount.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-	if (err == -1) {
+	if( mkdir(mount.c_str(), S_IRUSR | S_IWUSR) < 0) {
 		if (errno == EEXIST) {
 			RFSError("machine already in use");
 		} else {
-			RFSError("create mount directory error");
+			printf("create mount directory error = %s\n", strerror(errno));
+			RFSError("ReplFsServer server exits");
 		}
 	}
 
