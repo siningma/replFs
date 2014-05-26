@@ -32,7 +32,9 @@ InitReplFs( unsigned short portNum, int packetLoss, int numServers ) {
     /* Initialize network access, local state, etc.     */
     /****************************************************/
 
-    srand (time(NULL));
+    timeval ct;
+    gettimeofday(&ct, NULL);
+    srand(ct.tv_usec);
     uint32_t nodeId = (uint32_t)rand();
 
     client = new ClientInstance(packetLoss, nodeId, numServers);

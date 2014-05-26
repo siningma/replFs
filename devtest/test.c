@@ -112,7 +112,7 @@ init(void)
   signal(SIGCLD, SIG_IGN);
   /* Max 180 seconds to run test */
   /* Reduced to 15 sec, not sure if this is right. */
-  alarm(15);
+  alarm(180);
   /* Exit if we time out and get a SIGALRM */
   signal(SIGALRM, exit);
 }
