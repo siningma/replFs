@@ -23,10 +23,7 @@ bool isTimeOut(struct timeval *curr, struct timeval *last, uint32_t millisecond)
 }
 
 bool isDropPacket(int packetLoss) {
-	int prob = rand() % 100;
-	// printf("drop prob: %d\n", prob);
-
-	return prob < packetLoss;
+	return ((unsigned int)rand() % 100) < packetLoss;
 }
 
 uint32_t getNextNum(uint32_t num) {

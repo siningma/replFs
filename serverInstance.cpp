@@ -15,7 +15,9 @@ int main(int argc, char *argv[]) {
 	std::string mount(argv[4]);
 	int packetLoss = atoi(argv[6]);
 
-	srand(time(NULL));
+	timeval ct;
+   	gettimeofday(&ct, NULL);
+   	srand(ct.tv_usec);
 	uint32_t nodeId = (uint32_t)rand();
 
 	printf("Server port: %u, mount: %s, packetLoss: %d, nodeId: %010u\n", port, mount.c_str(), packetLoss, nodeId);
